@@ -1,209 +1,333 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Header } from './components/Header';
-import { HazardBriefingBanner } from './components/HazardBriefingBanner';
-import { LunarOutpost2DView } from './components/LunarOutpost2DView';
-import { TurnAllocationControls } from './components/TurnAllocationControls';
-import { SOL_CAMPAIGN } from './utils/nasaData';
-import type { TurnResources } from './types/trainer';
+import { RoverGrid } from './components/RoverGrid';
+import { CommandPanel } from './components/CommandPanel';
+import { LEVELS } from './utils/levels';
+import type { Coordinate, LevelConfig, TileType } from './types/trainer';
 import { soundManager } from './utils/soundEffects';
+import { Lightbulb } from 'lucide-react';
 
 // Code-split modals
-const SystemFailureModal = lazy(() => import('./components/SystemFailureModal'));
-const VictoryModal = lazy(() => import('./components/VictoryModal'));
-const ScenarioBriefingModal = lazy(() => import('./components/ScenarioBriefingModal'));
+const TeachersGuideModal = lazy(() => import('./components/TeachersGuideModal'));
+const MissionDebriefModal = lazy(() => import('./components/MissionDebriefModal'));
 const LeaderboardModal = lazy(() => import('./components/LeaderboardModal'));
 
 export function App() {
-  // Turn-based State: Sol 1 to 10
-  const [solIndex, setSolIndex] = useState(0); // 0 = Sol 1, 9 = Sol 10
-  const currentHazard = SOL_CAMPAIGN[solIndex];
+  const [levelIndex, setLevelIndex] = useState(0);
+  const currentLevel: LevelConfig = LEVELS[levelIndex];
 
-  // The 3 Core Resources
-  const [resources, setResources] = useState<TurnResources>({
-    power: 60,     // Primary currency (0-100% Yellow)
-    oxygen: 80,    // Life Support (0-100% Blue)
-    shielding: 80, // Base Integrity (0-100% Green)
-  });
+  // Path drawing state: begins with start tile
+  const [path, setPath] = useState<Coordinate[]>([currentLevel.start]);
+  const [roverPos, setRoverPos] = useState<Coordinate>(currentLevel.start);
+  const [isExecuting, setIsExecuting] = useState(false);
 
-  // Snapshot at start of Sol for constructive retry
-  const [solStartResources, setSolStartResources] = useState<TurnResources>({
-    power: 60,
-    oxygen: 80,
-    shielding: 80,
-  });
+  // Floating text feedback (e.g. +2 Solar!)
+  const [floatingText, setFloatingText] = useState<{ coord: Coordinate; text: string; color: string } | null>(null);
 
-  // Current turn allocations
-  const [o2Boosts, setO2Boosts] = useState(0);
-  const [shieldBoosts, setShieldBoosts] = useState(0);
+  // Level Results & Modals
+  const [debrief, setDebrief] = useState<{
+    show: boolean;
+    status: 'success' | 'failure';
+    failureReason?: string;
+    finalBattery: number;
+    stars: number;
+  } | null>(null);
 
-  // Game Status
-  const [failureReason, setFailureReason] = useState<string | null>(null);
-  const [isVictory, setIsVictory] = useState(false);
-  const [stormsSurvived, setStormsSurvived] = useState(0);
-
-  // Modals
-  const [showBriefing, setShowBriefing] = useState(false);
+  const [showTeachersGuide, setShowTeachersGuide] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [speed, setSpeed] = useState<1 | 2 | 5>(1);
+  const [totalStarsEarned, setTotalStarsEarned] = useState(0);
 
-  // Handle End Day / Execute Sol
-  const handleEndDay = () => {
-    // 1. Calculate Power Spent
-    const powerSpent = o2Boosts * 10 + shieldBoosts * 15;
-    const remainingPowerBeforeGen = resources.power - powerSpent;
+  // Reset path when changing levels
+  useEffect(() => {
+    setPath([currentLevel.start]);
+    setRoverPos(currentLevel.start);
+    setIsExecuting(false);
+    setFloatingText(null);
+    setDebrief(null);
+  }, [currentLevel]);
 
-    // 2. Calculate New Resource Values
-    const finalPower = Math.min(100, Math.max(0, remainingPowerBeforeGen + currentHazard.solarGeneration));
-    const finalOxygen = Math.min(100, Math.max(0, resources.oxygen - currentHazard.o2Depletion + o2Boosts * 15));
-    const finalShielding = Math.min(100, Math.max(0, resources.shielding - currentHazard.shieldDepletion + shieldBoosts * 20));
+  // Calculate battery & stars in real-time as path is planned
+  const calculatePlannedStats = () => {
+    let battery = currentLevel.maxBattery;
+    let stars = 0;
+    const visitedTiles = new Set<string>();
 
-    // 3. Constructive Failure Checks
-    if (finalPower <= 0) {
-      soundManager.playFailureTone();
-      setFailureReason(
-        `Your batteries completely drained to 0%! Today you spent ${powerSpent}% power, but the panels only generated ${currentHazard.solarGeneration}%. In low-light conditions, ration your power carefully!`
-      );
-      return;
+    for (let i = 1; i < path.length; i++) {
+      const coord = path[i];
+      const key = `${coord.r},${coord.c}`;
+      const tile: TileType = currentLevel.grid[coord.r][coord.c];
+
+      if (tile === 'regolith') {
+        battery -= 2;
+      } else if (tile === 'solar') {
+        battery = Math.min(currentLevel.maxBattery, battery - 1 + 2); // Net +1
+      } else if (tile === 'ice') {
+        battery -= 3;
+        if (!visitedTiles.has(key)) {
+          stars += 1;
+          visitedTiles.add(key);
+        }
+      } else {
+        // Plain basalt or goal
+        battery -= 1;
+      }
     }
 
-    if (finalOxygen <= 0) {
-      soundManager.playFailureTone();
-      setFailureReason(
-        `Your crew ran out of breathable air! Astronauts naturally consume ${currentHazard.o2Depletion}% oxygen every Sol. You must allocate at least one 10% power boost to the oxygen generator to replenish air.`
-      );
-      return;
-    }
-
-    if (finalShielding <= 0) {
-      soundManager.playFailureTone();
-      setFailureReason(
-        `Your deflector shield collapsed under space radiation! Today's hazard dealt ${currentHazard.shieldDepletion}% damage to your shields. When a solar storm hits, you must route extra power to shields!`
-      );
-      return;
-    }
-
-    // 4. Sol Survived Successfully!
-    const nextResources = {
-      power: finalPower,
-      oxygen: finalOxygen,
-      shielding: finalShielding,
+    return {
+      plannedBattery: battery,
+      plannedStars: stars,
     };
+  };
 
-    setResources(nextResources);
+  const { plannedBattery, plannedStars } = calculatePlannedStats();
 
-    if (currentHazard.type === 'solar_storm') {
-      setStormsSurvived((s) => s + 1);
+  // Check if rover reached the objective
+  const reachedGoal =
+    path.length > 1 &&
+    path[path.length - 1].r === currentLevel.goal.r &&
+    path[path.length - 1].c === currentLevel.goal.c;
+
+  // Handle clicking tiles to construct/undo route
+  const handleTileClick = (coord: Coordinate) => {
+    if (isExecuting) return;
+
+    // Cannot walk on boulders
+    if (currentLevel.grid[coord.r][coord.c] === 'boulder') {
+      soundManager.playError();
+      return;
     }
 
-    // 5. Check 10-Sol Victory
-    if (solIndex >= SOL_CAMPAIGN.length - 1) {
-      setIsVictory(true);
+    // Check if clicked tile is already in path
+    const existingIdx = path.findIndex((p) => p.r === coord.r && p.c === coord.c);
+    if (existingIdx !== -1) {
+      if (existingIdx === 0) {
+        // Reset to start
+        soundManager.playUndoTile();
+        setPath([currentLevel.start]);
+      } else {
+        // Backtrack to clicked tile
+        soundManager.playUndoTile();
+        setPath(path.slice(0, existingIdx + 1));
+      }
+      return;
+    }
+
+    // Must be adjacent (orthogonal: Up, Down, Left, Right) to the last tile in path
+    const last = path[path.length - 1];
+    const dr = Math.abs(last.r - coord.r);
+    const dc = Math.abs(last.c - coord.c);
+
+    if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
+      soundManager.playClickTile();
+      setPath([...path, coord]);
     } else {
-      // Advance to next Sol
-      setSolIndex((idx) => idx + 1);
-      setSolStartResources(nextResources);
-      setO2Boosts(0);
-      setShieldBoosts(0);
+      soundManager.playError();
     }
   };
 
-  // Constructive Failure Retry: restore start of that exact Sol
-  const handleRetrySol = () => {
-    setResources(solStartResources);
-    setO2Boosts(0);
-    setShieldBoosts(0);
-    setFailureReason(null);
+  // Undo step
+  const handleUndo = () => {
+    if (path.length > 1) {
+      soundManager.playUndoTile();
+      setPath(path.slice(0, path.length - 1));
+    }
   };
 
-  // Restart entire 10-Sol campaign
-  const handleRestartCampaign = () => {
-    setSolIndex(0);
-    const initial = { power: 60, oxygen: 80, shielding: 80 };
-    setResources(initial);
-    setSolStartResources(initial);
-    setO2Boosts(0);
-    setShieldBoosts(0);
-    setFailureReason(null);
-    setIsVictory(false);
-    setStormsSurvived(0);
+  // Clear path
+  const handleClear = () => {
+    soundManager.playUndoTile();
+    setPath([currentLevel.start]);
+  };
+
+  // Transmit command sequence & execute live rover drive
+  const handleTransmit = () => {
+    if (isExecuting || path.length <= 1) return;
+
+    soundManager.playTransmit();
+    setIsExecuting(true);
+
+    let currentStep = 0;
+    let liveBattery = currentLevel.maxBattery;
+    let liveStars = 0;
+    const visitedTiles = new Set<string>();
+
+    const interval = setInterval(() => {
+      currentStep += 1;
+
+      if (currentStep >= path.length) {
+        // Rover reached end of programmed path!
+        clearInterval(interval);
+        setIsExecuting(false);
+
+        const lastPos = path[path.length - 1];
+        const isAtGoal = lastPos.r === currentLevel.goal.r && lastPos.c === currentLevel.goal.c;
+
+        if (isAtGoal && liveBattery >= 0) {
+          setTotalStarsEarned((prev) => prev + liveStars);
+          setDebrief({
+            show: true,
+            status: 'success',
+            finalBattery: liveBattery,
+            stars: liveStars,
+          });
+        } else {
+          setDebrief({
+            show: true,
+            status: 'failure',
+            failureReason: isAtGoal
+              ? 'Rover arrived at the target, but battery died on the final meter!'
+              : 'The programmed sequence ended before reaching the target beacon tile.',
+            finalBattery: liveBattery,
+            stars: liveStars,
+          });
+        }
+        return;
+      }
+
+      // Move rover to next waypoint
+      const coord = path[currentStep];
+      setRoverPos(coord);
+      const tile: TileType = currentLevel.grid[coord.r][coord.c];
+      const key = `${coord.r},${coord.c}`;
+
+      // Calculate cost
+      if (tile === 'regolith') {
+        liveBattery -= 2;
+        soundManager.playRoverStep();
+        setFloatingText({ coord, text: '-2 Sand', color: 'bg-amber-950 text-amber-300 border-amber-600' });
+      } else if (tile === 'solar') {
+        liveBattery = Math.min(currentLevel.maxBattery, liveBattery - 1 + 2);
+        soundManager.playSolarRecharge();
+        setFloatingText({ coord, text: '+2 Solar!', color: 'bg-yellow-950 text-yellow-300 border-yellow-500' });
+      } else if (tile === 'ice') {
+        liveBattery -= 3;
+        if (!visitedTiles.has(key)) {
+          liveStars += 1;
+          visitedTiles.add(key);
+        }
+        soundManager.playIceScan();
+        setFloatingText({ coord, text: '-3 Ice (⭐+1)', color: 'bg-cyan-950 text-cyan-300 border-cyan-400' });
+      } else {
+        liveBattery -= 1;
+        soundManager.playRoverStep();
+        setFloatingText({ coord, text: '-1 Basalt', color: 'bg-slate-900 text-slate-300 border-slate-700' });
+      }
+
+      // Check for mid-route battery depletion!
+      if (liveBattery < 0) {
+        clearInterval(interval);
+        setIsExecuting(false);
+        setDebrief({
+          show: true,
+          status: 'failure',
+          failureReason: `Battery depleted on tile (${coord.r + 1}, ${coord.c + 1}) in ${tile.toUpperCase()}! Wheels stopped with 0 power remaining.`,
+          finalBattery: 0,
+          stars: liveStars,
+        });
+      }
+    }, 450);
+  };
+
+  // Next level handler
+  const handleNextLevel = () => {
+    setDebrief(null);
+    if (levelIndex < LEVELS.length - 1) {
+      setLevelIndex((idx) => idx + 1);
+    }
+  };
+
+  // Retry level handler
+  const handleRetry = () => {
+    setDebrief(null);
+    setPath([currentLevel.start]);
+    setRoverPos(currentLevel.start);
+    setIsExecuting(false);
+    setFloatingText(null);
   };
 
   return (
     <div className="min-h-screen bg-[#030712] text-slate-100 flex flex-col bg-radar-grid selection:bg-yellow-500 selection:text-black">
-      {/* Header */}
+      {/* Top Header */}
       <Header
-        missionTime={solIndex + 1}
-        isPaused={isPaused}
-        speed={speed}
-        activeCrisis={currentHazard.type === 'solar_storm'}
-        stormsSurvived={stormsSurvived}
-        onTogglePause={() => setIsPaused(!isPaused)}
-        onSetSpeed={setSpeed}
-        onOpenAcademy={() => setShowBriefing(true)}
+        currentLevelIndex={levelIndex}
+        totalLevels={LEVELS.length}
+        totalStars={totalStarsEarned}
+        onSelectLevel={(idx) => setLevelIndex(idx)}
+        onOpenTeachersGuide={() => setShowTeachersGuide(true)}
         onOpenLeaderboard={() => setShowLeaderboard(true)}
-        onOpenBriefing={() => setShowBriefing(true)}
-        onTriggerCrisis={() => {}}
-        onRestart={handleRestartCampaign}
       />
 
-      {/* Main Game Board */}
+      {/* Main Command Console */}
       <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 space-y-5">
-        {/* Phase 1: Daily Mission Briefing Banner */}
-        <HazardBriefingBanner
-          hazard={currentHazard}
-          solNumber={solIndex + 1}
+        {/* Level Mission Briefing Card */}
+        <div className="bg-slate-950/80 border-2 border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xl backdrop-blur-md space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-2">
+            <h2 className="text-base sm:text-lg font-black text-white font-mono flex items-center gap-2">
+              <span>{currentLevel.name}</span>
+              <span className="text-xs font-normal text-slate-400">({currentLevel.location})</span>
+            </h2>
+            <span className="text-xs font-mono font-bold text-yellow-400 bg-yellow-950/60 border border-yellow-800 px-3 py-1 rounded-full">
+              Battery Limit: {currentLevel.maxBattery} Pts
+            </span>
+          </div>
+
+          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            {currentLevel.briefing}
+          </p>
+
+          <div className="flex items-center gap-2 text-xs text-cyan-300 pt-1">
+            <Lightbulb className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="font-mono text-slate-400">NASA Science Fact:</span>
+            <span className="text-slate-300 truncate">{currentLevel.nasaFact}</span>
+          </div>
+        </div>
+
+        {/* Top-Down Interactive Rover Grid */}
+        <RoverGrid
+          level={currentLevel}
+          path={path}
+          currentRoverPos={roverPos}
+          isExecuting={isExecuting}
+          onTileClick={handleTileClick}
+          floatingText={floatingText}
         />
 
-        {/* 2D Flat Vector Visual Lunar Outpost View */}
-        <LunarOutpost2DView
-          resources={resources}
-          hazard={currentHazard}
-          solNumber={solIndex + 1}
-        />
-
-        {/* Phase 2 & 3: Turn Allocation Controls with + / - Buttons */}
-        <TurnAllocationControls
-          resources={resources}
-          hazard={currentHazard}
-          solNumber={solIndex + 1}
-          o2Boosts={o2Boosts}
-          shieldBoosts={shieldBoosts}
-          onAddO2={() => setO2Boosts((b) => b + 1)}
-          onRemoveO2={() => setO2Boosts((b) => Math.max(0, b - 1))}
-          onAddShield={() => setShieldBoosts((b) => b + 1)}
-          onRemoveShield={() => setShieldBoosts((b) => Math.max(0, b - 1))}
-          onEndDay={handleEndDay}
+        {/* Command Panel with Battery Drain Meter & Transmit */}
+        <CommandPanel
+          maxBattery={currentLevel.maxBattery}
+          currentBattery={plannedBattery}
+          pathLength={path.length - 1}
+          collectedStars={plannedStars}
+          targetStars={currentLevel.targetStars}
+          isExecuting={isExecuting}
+          canTransmit={reachedGoal && plannedBattery >= 0}
+          onTransmit={handleTransmit}
+          onClear={handleClear}
+          onUndo={handleUndo}
         />
       </main>
 
-      {/* Constructive Failure Modal (Engineers Learn From Failure) */}
-      {failureReason && (
+      {/* Teacher's Guide Modal */}
+      {showTeachersGuide && (
         <Suspense fallback={<div />}>
-          <SystemFailureModal
-            solNumber={solIndex + 1}
-            reason={failureReason}
-            onRetrySol={handleRetrySol}
-          />
+          <TeachersGuideModal onClose={() => setShowTeachersGuide(false)} />
         </Suspense>
       )}
 
-      {/* 10-Sol Victory Modal */}
-      {isVictory && (
+      {/* Mission Debrief Modal (Success or Constructive Failure) */}
+      {debrief?.show && (
         <Suspense fallback={<div />}>
-          <VictoryModal
-            finalResources={resources}
-            onRestart={handleRestartCampaign}
-            onOpenLeaderboard={() => setShowLeaderboard(true)}
-          />
-        </Suspense>
-      )}
-
-      {/* Scenario Explanation Briefing Modal */}
-      {showBriefing && (
-        <Suspense fallback={<div />}>
-          <ScenarioBriefingModal
-            onClose={() => setShowBriefing(false)}
+          <MissionDebriefModal
+            status={debrief.status}
+            levelName={currentLevel.name}
+            batteryRemaining={debrief.finalBattery}
+            maxBattery={currentLevel.maxBattery}
+            starsCollected={debrief.stars}
+            targetStars={currentLevel.targetStars}
+            failureReason={debrief.failureReason}
+            isLastLevel={levelIndex === LEVELS.length - 1}
+            onNextLevel={handleNextLevel}
+            onRetry={handleRetry}
           />
         </Suspense>
       )}
@@ -214,9 +338,9 @@ export function App() {
           <LeaderboardModal
             currentScore={{
               outpostType: 'lunar',
-              survivalTime: (solIndex + 1) * 60,
-              crisesResolved: stormsSurvived,
-              stabilityScore: Math.round((resources.power + resources.oxygen + resources.shielding) / 3),
+              survivalTime: (levelIndex + 1) * 120,
+              crisesResolved: totalStarsEarned,
+              stabilityScore: Math.round(((levelIndex + 1) / LEVELS.length) * 100),
             }}
             onClose={() => setShowLeaderboard(false)}
           />

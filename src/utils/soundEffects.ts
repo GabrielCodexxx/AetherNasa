@@ -1,4 +1,4 @@
-// Procedural Web Audio API sound generator for Lunar Resource Manager
+// Procedural Web Audio API sound generator for Rover Route Planner
 class SoundFX {
   private ctx: AudioContext | null = null;
   private soundEnabled: boolean = true;
@@ -50,8 +50,8 @@ class SoundFX {
       this.humGain = this.ctx.createGain();
 
       this.humOsc.type = 'sine';
-      this.humOsc.frequency.setValueAtTime(55, this.ctx.currentTime);
-      this.humGain.gain.setValueAtTime(0.02, this.ctx.currentTime);
+      this.humOsc.frequency.setValueAtTime(50, this.ctx.currentTime); // 50Hz deep space drone
+      this.humGain.gain.setValueAtTime(0.015, this.ctx.currentTime);
 
       this.humOsc.connect(this.humGain);
       this.humGain.connect(this.ctx.destination);
@@ -75,7 +75,8 @@ class SoundFX {
     }
   }
 
-  public playBeep(freq = 660, duration = 0.08, type: OscillatorType = 'triangle') {
+  // Click / Select tile waypoint
+  public playClickTile() {
     if (!this.soundEnabled) return;
     try {
       this.initCtx();
@@ -83,70 +84,176 @@ class SoundFX {
 
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-      gain.gain.setValueAtTime(0.07, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(620, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(840, this.ctx.currentTime + 0.05);
+
+      gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.06);
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
       osc.start();
-      osc.stop(this.ctx.currentTime + duration);
+      osc.stop(this.ctx.currentTime + 0.07);
     } catch {
       // Ignored
     }
   }
 
-  public playPlusBeep() {
-    this.playBeep(880, 0.09, 'triangle');
-  }
-
-  public playMinusBeep() {
-    this.playBeep(440, 0.09, 'sine');
-  }
-
-  public playErrorBuzz() {
-    this.playBeep(140, 0.15, 'sawtooth');
-  }
-
-  public playSuccessChime() {
+  // Deselect / Undo waypoint
+  public playUndoTile() {
     if (!this.soundEnabled) return;
     try {
       this.initCtx();
       if (!this.ctx) return;
 
-      const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(540, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(320, this.ctx.currentTime + 0.05);
+
+      gain.gain.setValueAtTime(0.07, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.06);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.07);
+    } catch {
+      // Ignored
+    }
+  }
+
+  // Transmit command sequence to rover
+  public playTransmit() {
+    if (!this.soundEnabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(1200, this.ctx.currentTime + 0.25);
+
+      gain.gain.setValueAtTime(0.09, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.32);
+    } catch {
+      // Ignored
+    }
+  }
+
+  // Rover step (Electric servo wheel motor)
+  public playRoverStep() {
+    if (!this.soundEnabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(240, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(180, this.ctx.currentTime + 0.08);
+
+      gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.09);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.1);
+    } catch {
+      // Ignored
+    }
+  }
+
+  // Solar Ridge Recharge (+2 Battery Chime)
+  public playSolarRecharge() {
+    if (!this.soundEnabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+
+      const notes = [659.25, 880, 1174.66]; // E5, A5, D6
       notes.forEach((freq, idx) => {
         const osc = this.ctx!.createOscillator();
         const gain = this.ctx!.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, this.ctx!.currentTime + idx * 0.08);
-        gain.gain.setValueAtTime(0.06, this.ctx!.currentTime + idx * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx!.currentTime + idx * 0.08 + 0.2);
+        osc.frequency.setValueAtTime(freq, this.ctx!.currentTime + idx * 0.07);
+        gain.gain.setValueAtTime(0.08, this.ctx!.currentTime + idx * 0.07);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx!.currentTime + idx * 0.07 + 0.2);
 
         osc.connect(gain);
         gain.connect(this.ctx!.destination);
-        osc.start(this.ctx!.currentTime + idx * 0.08);
-        osc.stop(this.ctx!.currentTime + idx * 0.08 + 0.22);
+        osc.start(this.ctx!.currentTime + idx * 0.07);
+        osc.stop(this.ctx!.currentTime + idx * 0.07 + 0.22);
       });
     } catch {
       // Ignored
     }
   }
 
-  public playEndDayChime() {
-    this.playSuccessChime();
+  // Water Ice Science Star Collected Chime
+  public playIceScan() {
+    if (!this.soundEnabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+
+      const notes = [587.33, 739.99, 880, 1174.66]; // D5, F#5, A5, D6
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx!.createOscillator();
+        const gain = this.ctx!.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, this.ctx!.currentTime + idx * 0.08);
+        gain.gain.setValueAtTime(0.08, this.ctx!.currentTime + idx * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx!.currentTime + idx * 0.08 + 0.25);
+
+        osc.connect(gain);
+        gain.connect(this.ctx!.destination);
+        osc.start(this.ctx!.currentTime + idx * 0.08);
+        osc.stop(this.ctx!.currentTime + idx * 0.08 + 0.28);
+      });
+    } catch {
+      // Ignored
+    }
   }
 
-  public playAlertSiren() {
-    this.playBeep(320, 0.25, 'sawtooth');
+  // System Failure / Battery Depleted Power-Down
+  public playFailure() {
+    if (!this.soundEnabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(70, this.ctx.currentTime + 0.6);
+
+      gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.7);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.75);
+    } catch {
+      // Ignored
+    }
   }
 
-  public playFailureTone() {
-    this.playBeep(180, 0.4, 'sawtooth');
-  }
-
-  public playVictoryFanfare() {
+  // Mission Success Fanfare
+  public playSuccess() {
     if (!this.soundEnabled) return;
     try {
       this.initCtx();
@@ -157,15 +264,38 @@ class SoundFX {
         const osc = this.ctx!.createOscillator();
         const gain = this.ctx!.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, this.ctx!.currentTime + idx * 0.12);
-        gain.gain.setValueAtTime(0.09, this.ctx!.currentTime + idx * 0.12);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx!.currentTime + idx * 0.12 + 0.4);
+        osc.frequency.setValueAtTime(freq, this.ctx!.currentTime + idx * 0.1);
+        gain.gain.setValueAtTime(0.09, this.ctx!.currentTime + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx!.currentTime + idx * 0.1 + 0.4);
 
         osc.connect(gain);
         gain.connect(this.ctx!.destination);
-        osc.start(this.ctx!.currentTime + idx * 0.12);
-        osc.stop(this.ctx!.currentTime + idx * 0.12 + 0.45);
+        osc.start(this.ctx!.currentTime + idx * 0.1);
+        osc.stop(this.ctx!.currentTime + idx * 0.1 + 0.45);
       });
+    } catch {
+      // Ignored
+    }
+  }
+
+  public playError() {
+    if (!this.soundEnabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+
+      gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.13);
     } catch {
       // Ignored
     }

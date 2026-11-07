@@ -1,46 +1,70 @@
-# Lunar Resource Manager 🚀
+# Rover Route Planner 🚀
 **2026 NASA Space Apps Challenge** | *Challenge: Build a Junior Astronaut Mission Trainer*  
+**Category:** Logic, Algorithmic Pathfinding & Resource Management  
 **Database:** Supabase (PostgreSQL) | **Deployment:** Vercel Edge
 
 ---
 
-## 🌟 Game Objective
+## 🌟 The Concept
 
-The player acts as the Commander of **Artemis Outpost** at Shackleton Crater. The goal is to **survive 10 "Sols" (lunar days)** by balancing three critical resources while responding to environmental hazards. If any resource drops to zero, the mission pauses, explains the engineering root cause, and allows the player to **retry the day**, reinforcing the fundamental NASA concept that **engineers learn from failure**.
+**Rover Route Planner** is a grid-based, top-down algorithmic pathfinding puzzle game where players program a lunar rover's command sequence before it starts moving. 
 
----
-
-## 🎮 Core Game Mechanics
-
-### 1. The Resource Economy (3 Core Lifelines)
-- **Solar Power (Battery Level 0–100%) [Yellow]**: The primary currency. Generates +20% per turn under clear skies.
-- **Oxygen (Life Support 0–100%) [Blue]**: Depletes by -10% naturally every turn. Player spends 10% Solar Power to generate +15% Oxygen.
-- **Radiation Shielding (Base Integrity 0–100%) [Green]**: Depletes by -5% naturally every turn. Player spends 15% Solar Power to charge shields by +20%.
-
-### 2. The 3-Phase Turn-Based Loop
-A turn-based structure allows students (ages 7–14, 2nd–3rd grade through middle school) to calmly analyze trade-offs without the panic of real-time decay:
-1. **Phase 1: Daily Mission Briefing**: Daily weather announcement (Clear Skies, Solar Flare, Moon Dust Squall, Eclipse) with real NASA fact snippets.
-2. **Phase 2: Power Allocation**: Simple, large touch-friendly `+` and `-` buttons to allocate available battery power to Oxygen and Shields.
-3. **Phase 3: Execute Sol**: Click "Execute Sol (End Day)". Animate resource dynamics, apply daily hazard damage, and evaluate base survival.
-
-### 3. Environmental Hazards (The Trade-offs)
-- **Clear Skies**: +20% solar power. Natural -10% Oxygen and -5% Shields.
-- **Solar Storm**: Radiation Shielding takes a massive **-40% damage hit**! Player must divert maximum power to shields, meaning they cannot afford to make oxygen that Sol.
-- **Lunar Dust Storm**: Electrostatic dust coats solar arrays. Power generation drops from **20% to only 5%**. Player must survive on stored battery reserves.
-- **Eclipse**: Zero (0%) power generation for one Sol. Tests if the player has been storing excess battery power or spending it all every day.
-
-### 4. Constructive Failure
-- Replaces generic "Game Over" with **"SYSTEM FAILURE"**.
-- Provides an authentic engineering post-mortem: *"Your batteries completely drained because you charged shields during a dust storm when solar input was low."*
-- Features a **"🔄 Retry Sol [X] (Engineers Learn From Failure)"** button that restores the day's starting conditions so cadets can iterate and solve the problem.
+Mimicking authentic NASA rover operations (such as the **VIPER lunar rover** and **Mars Perseverance**), players cannot steer the rover in real-time with a joystick due to space communication latency. Instead, they must analyze orbital satellite maps (from the **Lunar Reconnaissance Orbiter**), calculate terrain friction, plan an optimal route, and transmit the command sequence.
 
 ---
 
-## 🏆 Why It Wins
-- **NASA Challenge Guideline Alignment**: The challenge explicitly states that focusing on **two or three core resources** is significantly more pedagogically effective for this age group than overwhelming them with 5 or 6 meters.
-- **Direct Consequence Learning**: Clear, visual cues alongside numbers (e.g. astronaut face smiles at >50% O₂, looks worried at <30%, and turns red at <10%).
-- **Zero-Install & Touch Friendly**: Runs instantly on laptops, tablets, and Chromebooks via standard browser URL.
-- **Clean Code Chunks**: Sub-40kB initial payload with lazy-loaded modals.
+## 🎮 Core Gameplay Loop
+
+1. **Command Phase (Planning)**:
+   - Survey the top-down 8x8 or 10x10 lunar grid map.
+   - Click adjacent tiles to draw a continuous route from the **Landing Zone 🚀** to the **Primary Target 🎯**.
+   - Watch the colorful **Battery Meter** physically drain in real-time, giving immediate visual feedback on the power budget.
+   - Use **Undo Step ↩️** or **Clear Route 🔄** to iterate and optimize freely.
+2. **Commitment**:
+   - Press **"Transmit Sequence to Rover 🚀"** to lock the path.
+3. **Execution Phase**:
+   - The rover physically executes the route tile-by-tile.
+   - Battery points and Science Stars are dynamically updated with audio-visual feedback.
+4. **Mission Debrief**:
+   - **Mission Success**: Reached target with battery remaining (+ bonus for Water Ice scans).
+   - **System Failure**: Explains the exact engineering root cause (e.g., ran out of battery in Loose Sand) with an immediate **"🔄 Retry Route"** button.
+
+---
+
+## 🪨 Terrain Mechanics & Engineering Trade-Offs
+
+| Tile Type | Terrain | Battery Cost / Effect | Engineering Trade-off |
+| :--- | :--- | :--- | :--- |
+| 🌑 | **Smooth Basalt Plains** | **-1 Battery Point** | Fast, standard travel across lunar volcanic plains. |
+| 🏜️ | **Loose Regolith (Sand)** | **-2 Battery Points** | Abrasive sand causes wheel slippage, requiring high motor torque. |
+| 🪨 | **Crater Rim / Boulders** | **Impassable Obstacle** | Must route around, forcing players into potential sand traps. |
+| ☀️ | **Solar Ridge (Sunlight Zone)** | **+2 Battery Points** | High peaks of eternal light recharge solar panels. |
+| 🧊 | **Water Ice Deposit** | **-3 Battery Points & +1 Star ⭐** | Secondary science scan. Can you afford the battery detour? |
+
+---
+
+## 🗺️ Progressive 10-Sector Campaign (Real NASA Topography)
+
+1. **Sector 1: Shackleton Crater Rim** (8x8) – Tutorial: Basic movement & boulder avoidance.
+2. **Sector 2: Malapert Mountain Summit** (8x8) – Serpentine path through high impact rocks.
+3. **Sector 3: Nobile Crater Rim** (8x8) – Introduction of Water Ice detour decisions.
+4. **Sector 4: Faustini Trench** (8x8) – Crossing loose regolith sand traps.
+5. **Sector 5: Haworth Crater Slopes** (8x8) – Safe long basalt vs. risky short regolith route.
+6. **Sector 6: Shoemaker Crater Ridge** (8x8) – Introduction of Solar Ridge recharge mechanics.
+7. **Sector 7: Amundsen Crater Plains** (8x8) – Tight power budget requiring solar recharge.
+8. **Sector 8: Oceanus Procellarum** (10x10) – Large plain with multiple Water Ice deposits.
+9. **Sector 9: Mare Tranquillitatis Heritage** (10x10) – Apollo 11 historical landing site maze.
+10. **Sector 10: South Pole-Aitken Grand Basin** (10x10) – The ultimate test: chaining solar ridges to gather 3 Science Stars!
+
+---
+
+## 🍎 Teacher's Guide Tab (Hackathon Winner Feature)
+
+Click the **"Teacher's Guide"** button on the main navigation for a complete **4th–6th Grade STEM & Computer Science Lesson Plan**:
+- **Core Standard**: CSTA K-12 Computer Science (1B-AP-10: Algorithmic Sequencing) & NGSS (3-5-ETS1-2).
+- **45-Minute Classroom Activity ("Mission Control & Rover")**: Pair students where one acts as **Houston Mission Control** (calculating the code on paper) and the other acts as the **Autonomous Rover** (transmitting the code).
+- **Discussion Prompts**: *"Why doesn't NASA just drive rovers in a straight line?"* and *"Why can't we drive space rovers with a joystick?"*
+- **Printable Curriculum**: One-click print-ready worksheet.
 
 ---
 

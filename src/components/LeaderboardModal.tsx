@@ -38,7 +38,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
     if (!callsign.trim() || submitting || submitted) return;
 
     setSubmitting(true);
-    soundManager.playBeep(660, 0.08);
+    soundManager.playClickTile();
 
     await submitLeaderboardScore({
       cadet_callsign: callsign.trim().toUpperCase(),
@@ -48,7 +48,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
       final_stability_score: currentScore.stabilityScore,
     });
 
-    soundManager.playSuccessChime();
+    soundManager.playSuccess();
     setSubmitted(true);
     setSubmitting(false);
 
