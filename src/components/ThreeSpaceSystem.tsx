@@ -299,127 +299,11 @@ function generateNeptuneCanvas(): HTMLCanvasElement {
   return canvas;
 }
 
-// Procedural Earth Landmass & Ocean Texture Generator
-function generateEarthTexture(iceReductionFactor: number = 0): { diffuse: HTMLCanvasElement; bump: HTMLCanvasElement } {
-  const width = 2048;
-  const height = 1024;
-
-  const dCanvas = document.createElement('canvas');
-  dCanvas.width = width;
-  dCanvas.height = height;
-  const dCtx = dCanvas.getContext('2d')!;
-
-  const bCanvas = document.createElement('canvas');
-  bCanvas.width = width;
-  bCanvas.height = height;
-  const bCtx = bCanvas.getContext('2d')!;
-
-  // 1. Deep Ocean Base
-  const oceanGrad = dCtx.createLinearGradient(0, 0, 0, height);
-  oceanGrad.addColorStop(0, '#0f172a');
-  oceanGrad.addColorStop(0.3, '#1e3a8a');
-  oceanGrad.addColorStop(0.5, '#1d4ed8');
-  oceanGrad.addColorStop(0.7, '#1e3a8a');
-  oceanGrad.addColorStop(1, '#0f172a');
-  dCtx.fillStyle = oceanGrad;
-  dCtx.fillRect(0, 0, width, height);
-
-  bCtx.fillStyle = '#202020';
-  bCtx.fillRect(0, 0, width, height);
-
-  // 2. Continents
-  const drawContinent = (cx: number, cy: number, rx: number, ry: number, rot: number, color: string = '#15803d') => {
-    dCtx.save();
-    dCtx.translate(cx, cy);
-    dCtx.rotate(rot);
-    dCtx.scale(rx / 100, ry / 100);
-    dCtx.fillStyle = color;
-    dCtx.beginPath();
-    dCtx.arc(0, 0, 100, 0, Math.PI * 2);
-    dCtx.fill();
-    dCtx.restore();
-
-    bCtx.save();
-    bCtx.translate(cx, cy);
-    bCtx.rotate(rot);
-    bCtx.scale(rx / 100, ry / 100);
-    bCtx.fillStyle = '#c0c0c0';
-    bCtx.beginPath();
-    bCtx.arc(0, 0, 100, 0, Math.PI * 2);
-    bCtx.fill();
-    bCtx.restore();
-  };
-
-  // North America
-  drawContinent(520, 320, 220, 160, -0.2);
-  drawContinent(420, 280, 140, 100, 0.1);
-
-  // South America & Amazon
-  drawContinent(680, 640, 160, 240, 0.25, '#166534');
-
-  // Eurasia
-  drawContinent(1200, 320, 360, 180, 0.05);
-  drawContinent(1480, 340, 260, 160, -0.1);
-
-  // Africa & Sahara
-  drawContinent(1080, 520, 180, 220, 0.1, '#ca8a04');
-  drawContinent(1100, 640, 140, 160, 0.0, '#15803d');
-
-  // Australia
-  drawContinent(1620, 680, 130, 90, 0.15, '#b45309');
-
-  // Polar Ice Caps
-  const arcticIceHeight = Math.max(30, 110 * (1 - iceReductionFactor * 0.45));
-  const arcticGrad = dCtx.createLinearGradient(0, 0, 0, arcticIceHeight);
-  arcticGrad.addColorStop(0, '#ffffff');
-  arcticGrad.addColorStop(0.8, '#e0f2fe');
-  arcticGrad.addColorStop(1, 'rgba(224, 242, 254, 0)');
-  dCtx.fillStyle = arcticGrad;
-  dCtx.fillRect(0, 0, width, arcticIceHeight);
-
-  const antarcticStart = height - 120;
-  const antarcticGrad = dCtx.createLinearGradient(0, antarcticStart, 0, height);
-  antarcticGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
-  antarcticGrad.addColorStop(0.3, '#e0f2fe');
-  antarcticGrad.addColorStop(1, '#ffffff');
-  dCtx.fillStyle = antarcticGrad;
-  dCtx.fillRect(0, antarcticStart, width, 120);
-
-  // Greenland
-  drawContinent(820, 190, 90, 110, -0.15, '#f8fafc');
-
-  return { diffuse: dCanvas, bump: bCanvas };
-}
-
-// Procedural Clouds
-function generateCloudTexture(): HTMLCanvasElement {
-  const canvas = document.createElement('canvas');
-  canvas.width = 1024;
-  canvas.height = 512;
-  const ctx = canvas.getContext('2d')!;
-
-  ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-  for (let i = 0; i < 70; i++) {
-    const x = (i * 137) % canvas.width;
-    const y = 80 + ((i * 97) % (canvas.height - 160));
-    const rx = 60 + (i % 5) * 25;
-    const ry = 15 + (i % 3) * 10;
-    ctx.beginPath();
-    ctx.ellipse(x, y, rx, ry, 0.3 * Math.sin(i), 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  return canvas;
-}
-
 export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
   viewMode,
   selectedPlanetId,
   selectedHotspotId,
-  currentYear,
+  currentYear: _currentYear,
   onSelectPlanet,
   onSelectHotspot,
   onSelectSatellite,
@@ -452,6 +336,45 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
   const cloudsMeshRef = useRef<THREE.Mesh | null>(null);
   const divergenceMeshRef = useRef<THREE.Mesh | null>(null);
   const animatedSatellitesRef = useRef<any[]>([]);
+  const satellitesGroupRef = useRef<THREE.Group | null>(null);
+  const hotspotsGroupRef = useRef<THREE.Group | null>(null);
+  const gridHelperRef = useRef<THREE.PolarGridHelper | null>(null);
+  const autoRotateRef = useRef<boolean>(true);
+
+  // Sync state to refs for high-performance animation without scene destruction
+  const callbacksRef = useRef({
+    onSelectPlanet,
+    onSelectHotspot,
+    onSelectSatellite,
+  });
+  useEffect(() => {
+    callbacksRef.current = {
+      onSelectPlanet,
+      onSelectHotspot,
+      onSelectSatellite,
+    };
+  }, [onSelectPlanet, onSelectHotspot, onSelectSatellite]);
+
+  useEffect(() => {
+    autoRotateRef.current = autoRotate;
+  }, [autoRotate]);
+
+  useEffect(() => {
+    if (gridHelperRef.current) {
+      gridHelperRef.current.visible = showGrid;
+    }
+  }, [showGrid]);
+
+  useEffect(() => {
+    if (divergenceMeshRef.current) {
+      divergenceMeshRef.current.visible = showDivergenceLens;
+    }
+  }, [showDivergenceLens]);
+
+  const viewModeRef = useRef(viewMode);
+  useEffect(() => {
+    viewModeRef.current = viewMode;
+  }, [viewMode]);
 
   // Projected 3D Callout Badges for Structure Cutaway (matching User's Image 3)
   interface StructureCallout {
@@ -491,6 +414,15 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       triggerFlyTo(targetPos, planetData.radius * 3.8 + 5, Math.PI / 2.3);
     } else if (viewMode === 'night_sky') {
       triggerFlyTo(targetPos, planetData.radius * 1.5, Math.PI * 0.15); // Look up into deep space!
+    }
+
+    // Toggle Earth local telemetry & satellites visibility based on focus
+    const isEarthFocused = viewMode === 'earth_focus' || (viewMode === 'planet_focus' && selectedPlanetId === 'earth');
+    if (satellitesGroupRef.current) {
+      satellitesGroupRef.current.visible = isEarthFocused;
+    }
+    if (hotspotsGroupRef.current) {
+      hotspotsGroupRef.current.visible = isEarthFocused;
     }
   }, [viewMode, selectedPlanetId, triggerFlyTo]);
 
@@ -652,6 +584,8 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
     const gridHelper = new THREE.PolarGridHelper(160, 16, 8, 64, 0x0369a1, 0xcbd5e1);
     gridHelper.position.y = -0.5;
     scene.add(gridHelper);
+    gridHelperRef.current = gridHelper;
+    gridHelper.visible = showGrid;
 
     // 5. Planets Group
     const planetsGroup = new THREE.Group();
@@ -704,27 +638,34 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       planetMeshesRef.current.set(planet.id, pGroup);
 
       if (planet.id === 'earth') {
-        // Detailed Photorealistic Earth
-        const iceFactor = (currentYear - 1980) / 46;
-        const { diffuse, bump } = generateEarthTexture(iceFactor);
-        const diffTex = new THREE.CanvasTexture(diffuse);
-        const bumpTex = new THREE.CanvasTexture(bump);
+        // High-Definition Photorealistic NASA Earth (NASA Blue Marble + Elevation Normal + Specular Oceans)
+        const textureLoader = new THREE.TextureLoader();
+        const earthDiffTex = textureLoader.load('/textures/earth_atmos_2048.jpg');
+        const earthNormalTex = textureLoader.load('/textures/earth_normal_2048.jpg');
+        const earthSpecTex = textureLoader.load('/textures/earth_specular_2048.jpg');
+        const earthCloudsTex = textureLoader.load('/textures/earth_clouds_1024.png');
+        const moonTex = textureLoader.load('/textures/moon_1024.jpg');
 
-        const earthGeo = new THREE.SphereGeometry(planet.radius, 48, 36);
+        earthDiffTex.colorSpace = THREE.SRGBColorSpace;
+        earthCloudsTex.colorSpace = THREE.SRGBColorSpace;
+        moonTex.colorSpace = THREE.SRGBColorSpace;
+
+        const earthGeo = new THREE.SphereGeometry(planet.radius, 64, 48);
         const earthMat = new THREE.MeshStandardMaterial({
-          map: diffTex,
-          bumpMap: bumpTex,
-          bumpScale: 0.35,
-          roughness: 0.6,
-          metalness: 0.1,
+          map: earthDiffTex,
+          normalMap: earthNormalTex,
+          normalScale: new THREE.Vector2(0.85, 0.85),
+          roughnessMap: earthSpecTex,
+          roughness: 0.65,
+          metalness: 0.05,
         });
         const earthMesh = new THREE.Mesh(earthGeo, earthMat);
         earthMesh.userData = { isPlanet: true, data: planet };
         pGroup.add(earthMesh);
         pickableTargets.push(earthMesh);
 
-        // Atmosphere halo
-        const atmosGeo = new THREE.SphereGeometry(planet.radius * 1.05, 32, 32);
+        // Subtle Natural Rayleigh Atmospheric Limb (Soft sky blue, not a thick cyan ring)
+        const atmosGeo = new THREE.SphereGeometry(planet.radius * 1.02, 48, 48);
         const atmosMat = new THREE.ShaderMaterial({
           vertexShader: `
             varying vec3 vNormal;
@@ -736,50 +677,67 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
           fragmentShader: `
             varying vec3 vNormal;
             void main() {
-              float intensity = pow(0.7 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.5);
-              gl_FragColor = vec4(0.1, 0.7, 1.0, 1.0) * intensity * 1.2;
+              float intensity = pow(0.65 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 3.2);
+              gl_FragColor = vec4(0.28, 0.65, 1.0, 1.0) * intensity * 0.75;
             }
           `,
           side: THREE.BackSide,
           blending: THREE.AdditiveBlending,
           transparent: true,
+          depthWrite: false,
         });
         const atmosMesh = new THREE.Mesh(atmosGeo, atmosMat);
         pGroup.add(atmosMesh);
 
-        // Swirling Clouds
-        const cloudTex = new THREE.CanvasTexture(generateCloudTexture());
-        const cloudGeo = new THREE.SphereGeometry(planet.radius * 1.018, 36, 32);
+        // Swirling Realistic Weather Satellite Clouds
+        const cloudGeo = new THREE.SphereGeometry(planet.radius * 1.012, 48, 36);
         const cloudMat = new THREE.MeshStandardMaterial({
-          map: cloudTex,
+          map: earthCloudsTex,
           transparent: true,
           opacity: 0.55,
           blending: THREE.AdditiveBlending,
+          depthWrite: false,
         });
         const cloudsMesh = new THREE.Mesh(cloudGeo, cloudMat);
         pGroup.add(cloudsMesh);
         cloudsMeshRef.current = cloudsMesh;
 
-        // Earth's Moon
-        const moonGeo = new THREE.SphereGeometry(0.65, 24, 24);
-        const moonMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.9 });
+        // Earth's Moon with Real Lunar Topography & Craters
+        const moonGeo = new THREE.SphereGeometry(0.65, 32, 32);
+        const moonMat = new THREE.MeshStandardMaterial({
+          map: moonTex,
+          roughness: 0.9,
+          metalness: 0.05,
+        });
         const moonMesh = new THREE.Mesh(moonGeo, moonMat);
         moonMesh.position.set(5.2, 1.2, 0);
         pGroup.add(moonMesh);
 
         // Feature 2: Dual-Pole Regional Divergence Heatmap Mesh (NASA Challenge)
         const divTex = new THREE.CanvasTexture(generateDivergenceTexture());
-        const divGeo = new THREE.SphereGeometry(planet.radius * 1.012, 36, 32);
+        const divGeo = new THREE.SphereGeometry(planet.radius * 1.008, 48, 36);
         const divMat = new THREE.MeshBasicMaterial({
           map: divTex,
           transparent: true,
-          opacity: 0.85,
+          opacity: 0.8,
           blending: THREE.AdditiveBlending,
+          depthWrite: false,
         });
         const divMesh = new THREE.Mesh(divGeo, divMat);
         divMesh.visible = showDivergenceLens;
         pGroup.add(divMesh);
         divergenceMeshRef.current = divMesh;
+
+        // Telemetry & Satellites Groups (Cleanly isolated so Solar System view stays pristine!)
+        const satellitesGroup = new THREE.Group();
+        pGroup.add(satellitesGroup);
+        satellitesGroupRef.current = satellitesGroup;
+        satellitesGroup.visible = (viewMode === 'earth_focus' || selectedPlanetId === 'earth');
+
+        const hotspotsGroup = new THREE.Group();
+        pGroup.add(hotspotsGroup);
+        hotspotsGroupRef.current = hotspotsGroup;
+        hotspotsGroup.visible = (viewMode === 'earth_focus' || selectedPlanetId === 'earth');
 
         // Feature 3: Live NASA Earth Observing Satellites Constellation (3D Orbits)
         const satellites: any[] = [];
@@ -801,7 +759,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
           ringGeo.setFromPoints(ringPts);
           const ringMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.32 });
           const orbitLine = new THREE.Line(ringGeo, ringMat);
-          pGroup.add(orbitLine);
+          satellitesGroup.add(orbitLine);
 
           // Satellite Model
           const satGroup = new THREE.Group();
@@ -819,7 +777,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
           wingMesh.userData = { isSatellite: true, data: sat };
           satGroup.userData = { isSatellite: true, data: sat };
 
-          pGroup.add(satGroup);
+          satellitesGroup.add(satGroup);
           pickableTargets.push(bodyMesh);
 
           satellites.push({
@@ -834,34 +792,33 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         });
         animatedSatellitesRef.current = satellites;
 
-        // Hotspot Telemetry Needles on Earth (Clean Architectural Beacons - NO DOTS)
+        // Telemetry Research Beacons on Earth (Low-profile, sleek architectural pin - NO SPIKES / NO DOTS)
         EARTH_HOTSPOTS.forEach((hs) => {
           const pos = latLonToVector3(hs.lat, hs.lon, planet.radius);
           const norm = pos.clone().normalize();
 
           const color =
             hs.domain === 'cryosphere'
-              ? 0x0284c7
+              ? 0x38bdf8
               : hs.domain === 'biosphere'
-              ? 0x15803d
+              ? 0x22c55e
               : hs.domain === 'hydrosphere'
-              ? 0x0369a1
-              : 0xdc2626;
+              ? 0x0284c7
+              : 0xef4444;
 
           const isSelected = selectedHotspotId === hs.id;
-          // Sleek 3D telemetry station needle (architectural, not a dot)
-          const needleGeo = new THREE.CylinderGeometry(0.02, 0.08, isSelected ? 0.65 : 0.45, 8);
-          const needleMat = new THREE.MeshStandardMaterial({
+          const beaconGeo = new THREE.CylinderGeometry(0.015, 0.035, isSelected ? 0.22 : 0.14, 8);
+          const beaconMat = new THREE.MeshStandardMaterial({
             color: isSelected ? 0x0369a1 : color,
-            roughness: 0.25,
-            metalness: 0.4,
+            roughness: 0.2,
+            metalness: 0.6,
           });
-          const needle = new THREE.Mesh(needleGeo, needleMat);
-          needle.position.copy(pos.clone().add(norm.clone().multiplyScalar(0.22)));
-          needle.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), norm);
-          needle.userData = { isHotspot: true, data: hs };
-          pGroup.add(needle);
-          pickableTargets.push(needle);
+          const beacon = new THREE.Mesh(beaconGeo, beaconMat);
+          beacon.position.copy(pos.clone().add(norm.clone().multiplyScalar(0.07)));
+          beacon.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), norm);
+          beacon.userData = { isHotspot: true, data: hs };
+          hotspotsGroup.add(beacon);
+          pickableTargets.push(beacon);
         });
       } else {
         // Other Planets with Real Procedural Textures
@@ -941,8 +898,9 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       // 1. Outer 3/4 sphere shell (planet map surface)
       let outerTex: THREE.Texture | undefined;
       if (targetPlanet.id === 'earth') {
-        const { diffuse } = generateEarthTexture(0.5);
-        outerTex = new THREE.CanvasTexture(diffuse);
+        const textureLoader = new THREE.TextureLoader();
+        outerTex = textureLoader.load('/textures/earth_atmos_2048.jpg');
+        outerTex.colorSpace = THREE.SRGBColorSpace;
       } else if (textureMap[targetPlanet.id]) {
         outerTex = new THREE.CanvasTexture(textureMap[targetPlanet.id]);
       }
@@ -1101,17 +1059,17 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         for (const hit of intersects) {
           if (hit.object.userData?.isSatellite) {
             soundManager.playClick();
-            if (onSelectSatellite) {
-              onSelectSatellite(hit.object.userData.data);
+            if (callbacksRef.current.onSelectSatellite) {
+              callbacksRef.current.onSelectSatellite(hit.object.userData.data);
             }
             return;
           } else if (hit.object.userData?.isHotspot) {
             soundManager.playClick();
-            onSelectHotspot(hit.object.userData.data);
+            callbacksRef.current.onSelectHotspot(hit.object.userData.data);
             return;
           } else if (hit.object.userData?.isPlanet) {
             soundManager.playClick();
-            onSelectPlanet(hit.object.userData.data);
+            callbacksRef.current.onSelectPlanet(hit.object.userData.data);
             return;
           }
         }
@@ -1123,8 +1081,8 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       orbitStateRef.current.isTransitioning = false;
 
       const zoomSpeed = orbitStateRef.current.radius * 0.0016;
-      const minR = viewMode === 'solar_system' ? 25 : 5;
-      const maxR = viewMode === 'solar_system' ? 420 : 60;
+      const minR = viewModeRef.current === 'solar_system' ? 25 : 5;
+      const maxR = viewModeRef.current === 'solar_system' ? 420 : 60;
       const newR = orbitStateRef.current.radius + e.deltaY * zoomSpeed;
 
       orbitStateRef.current.radius = Math.min(maxR, Math.max(minR, newR));
@@ -1154,7 +1112,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         if (Math.abs(st.radius - st.targetRadius) < 0.25 && st.target.distanceTo(st.targetLookAt) < 0.2) {
           st.isTransitioning = false;
         }
-      } else if (autoRotate && !isDragging) {
+      } else if (autoRotateRef.current && !isDragging) {
         st.theta += 0.001;
       }
 
@@ -1173,7 +1131,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
 
       // Orbit Planets
       animatedPlanets.forEach((pl) => {
-        if (autoRotate && viewMode === 'solar_system') {
+        if (autoRotateRef.current && viewModeRef.current === 'solar_system') {
           pl.angle += pl.data.orbitSpeed * delta * 0.7;
           pl.mesh.position.x = Math.cos(pl.angle) * pl.data.orbitDistance;
           pl.mesh.position.z = Math.sin(pl.angle) * pl.data.orbitDistance;
@@ -1272,7 +1230,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
     };
-  }, [onSelectPlanet, onSelectHotspot, currentYear, viewMode, autoRotate, selectedHotspotId, selectedPlanetId]);
+  }, []);
 
   // Sync Structure Mode with Selected Planet position and rebuild layers
   useEffect(() => {
