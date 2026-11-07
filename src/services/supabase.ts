@@ -4,12 +4,12 @@ const supabaseUrl =
   import.meta.env.VITE_SUPABASE_URL ||
   import.meta.env.NEXT_PUBLIC_SUPABASE_URL ||
   import.meta.env.SUPABASE_URL ||
-  '';
+  'https://toakvrrofklcjwyjahcp.supabase.co';
 const supabaseAnonKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
   import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   import.meta.env.SUPABASE_ANON_KEY ||
-  '';
+  'sb_publishable_nNO4YyyJQVGY9avCYeeqSQ_R9TwwUDM';
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
