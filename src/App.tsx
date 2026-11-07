@@ -1,10 +1,12 @@
 import { useState, lazy, Suspense } from 'react';
+import { Compass } from 'lucide-react';
 import { ThreeSpaceSystem } from './components/ThreeSpaceSystem';
 import { EarthSystemHeader } from './components/EarthSystemHeader';
 import { PlanetHUD } from './components/PlanetHUD';
 import { EarthTrendInspector } from './components/EarthTrendInspector';
 import { EarthTimelineScrubber } from './components/EarthTimelineScrubber';
 import { DetectiveScenariosModal } from './components/DetectiveScenariosModal';
+import { soundManager } from './utils/soundEffects';
 import {
   EARTH_SYSTEM_TRENDS,
   SOLAR_PLANETS,
@@ -36,6 +38,7 @@ export function App() {
   const [showBriefing, setShowBriefing] = useState<boolean>(false);
   const [showLogbook, setShowLogbook] = useState<boolean>(false);
   const [showScenarios, setShowScenarios] = useState<boolean>(false);
+  const [isPlanetHudOpen, setIsPlanetHudOpen] = useState<boolean>(false);
 
   // Active planet & trend
   const currentPlanet =
@@ -45,6 +48,7 @@ export function App() {
 
   const handleSelectPlanet = (planet: PlanetData) => {
     setSelectedPlanetId(planet.id);
+    setIsPlanetHudOpen(true);
     if (planet.id === 'earth' && viewMode !== 'structure') {
       setViewMode('earth_focus');
     }
@@ -55,6 +59,7 @@ export function App() {
     const nextIndex = (currentIndex + 1) % SOLAR_PLANETS.length;
     const nextPlanet = SOLAR_PLANETS[nextIndex];
     setSelectedPlanetId(nextPlanet.id);
+    setIsPlanetHudOpen(true);
   };
 
   const handlePrevPlanet = () => {
@@ -62,6 +67,7 @@ export function App() {
     const prevIndex = (currentIndex - 1 + SOLAR_PLANETS.length) % SOLAR_PLANETS.length;
     const prevPlanet = SOLAR_PLANETS[prevIndex];
     setSelectedPlanetId(prevPlanet.id);
+    setIsPlanetHudOpen(true);
   };
 
   const handleSelectHotspot = (hotspot: HotspotMarker) => {
@@ -124,15 +130,39 @@ export function App() {
         onOpenScenarios={() => setShowScenarios(true)}
       />
 
-      {/* 3. Left Planetary Intelligence & Structure Dossier (No dots) */}
+      {/* 3. Left Planetary Intelligence & Structure Dossier (Appears upon clicking planet) */}
       <PlanetHUD
         planet={currentPlanet}
         viewMode={viewMode}
-        onChangeViewMode={setViewMode}
+        isOpen={isPlanetHudOpen || isStructureMode}
+        onClose={() => setIsPlanetHudOpen(false)}
+        onChangeViewMode={(mode) => {
+          setViewMode(mode);
+          if (mode === 'solar_system') {
+            setIsPlanetHudOpen(false);
+          } else {
+            setIsPlanetHudOpen(true);
+          }
+        }}
         onNextPlanet={handleNextPlanet}
         onPrevPlanet={handlePrevPlanet}
         onOpenEncyclopedia={() => setShowBriefing(true)}
       />
+
+      {/* Quick Access Planet Dossier Trigger when HUD is closed */}
+      {!isPlanetHudOpen && !isStructureMode && (
+        <button
+          onClick={() => {
+            soundManager.playClick();
+            setIsPlanetHudOpen(true);
+          }}
+          className="absolute top-20 left-4 sm:left-6 z-20 pointer-events-auto px-3 py-2 rounded-2xl bg-white/85 backdrop-blur-xl border border-white/90 shadow-lg shadow-slate-200/50 flex items-center gap-2 text-xs font-orbitron font-bold text-slate-800 hover:text-[#0369A1] hover:bg-sky-50 transition-all"
+          title="Open Planetary Dossier"
+        >
+          <Compass className="w-3.5 h-3.5 text-[#0369A1]" />
+          <span>{currentPlanet.name} Dossier</span>
+        </button>
+      )}
 
       {/* 4. Right Regional Trend Divergence Dossier (No dots) */}
       {!isStructureMode && (

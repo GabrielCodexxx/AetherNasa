@@ -76,7 +76,7 @@ export const EarthTimelineScrubber: React.FC<EarthTimelineScrubberProps> = ({
                 soundManager.playClick();
                 onSelectDomain(dom.id);
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-orbitron font-bold transition-all ${
                 isActive
                   ? 'bg-[#0369A1] text-white shadow-sm shadow-sky-900/15'
                   : 'bg-slate-50/80 hover:bg-sky-50 text-slate-600 hover:text-[#0369A1]'
@@ -145,9 +145,9 @@ export const EarthTimelineScrubber: React.FC<EarthTimelineScrubberProps> = ({
             />
           </div>
 
-          <div className="flex justify-between text-[10px] text-slate-400 font-medium">
+          <div className="flex justify-between text-[10px] font-space text-slate-400 font-medium">
             <span>1980 (Baseline)</span>
-            <span className="text-[#0369A1] font-extrabold flex items-center gap-1 text-xs">
+            <span className="text-[#0369A1] font-orbitron font-extrabold flex items-center gap-1 text-xs">
               <Calendar className="w-3.5 h-3.5" />
               Year {currentYear}
             </span>
@@ -157,8 +157,8 @@ export const EarthTimelineScrubber: React.FC<EarthTimelineScrubberProps> = ({
 
         {/* Metric Readout for Active Year */}
         <div className="hidden lg:flex items-center gap-2 pl-3 border-l border-slate-200 shrink-0">
-          <span className="text-slate-500 font-medium">{currentTrend.name.split(' ')[0]}:</span>
-          <span className="text-[#15803D] font-black text-sm">
+          <span className="text-slate-500 font-space font-medium">{currentTrend.name.split(' ')[0]}:</span>
+          <span className="text-[#15803D] font-orbitron font-black text-sm">
             {pt.value} {currentTrend.metricUnit}
           </span>
         </div>

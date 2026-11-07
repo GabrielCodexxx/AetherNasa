@@ -40,25 +40,28 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
   };
 
   return (
-    <header className="absolute top-0 inset-x-0 z-30 p-3 sm:p-5 pointer-events-none select-none font-sans">
-      <div className="flex items-center justify-between gap-3 max-w-7xl mx-auto">
-        {/* Top-Left Brand & Planet Switcher (Glassmorphic Eco-Tracker Light Mode) */}
-        <div className="pointer-events-auto flex items-center gap-3 bg-white/75 backdrop-blur-xl border border-white/80 rounded-2xl px-4 py-2.5 shadow-lg shadow-slate-200/50">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0369A1] to-[#15803D] flex items-center justify-center shadow-md shadow-sky-900/15">
+    <header className="absolute top-0 inset-x-0 z-30 p-3 sm:p-4 pointer-events-none select-none font-sans">
+      <div className="relative w-full h-full flex items-center justify-between">
+        {/* Empty left anchor so layout remains flexible */}
+        <div className="hidden lg:block w-12" />
+
+        {/* Top-Center Brand & Planet Switcher (Repositioned to Top Center) */}
+        <div className="pointer-events-auto mx-auto lg:absolute lg:left-1/2 lg:-translate-x-1/2 flex items-center gap-2.5 sm:gap-3 bg-white/85 backdrop-blur-xl border border-white/90 rounded-2xl px-3.5 sm:px-4 py-2 sm:py-2.5 shadow-xl shadow-slate-200/50">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-[#0369A1] to-[#15803D] flex items-center justify-center shadow-md shadow-sky-900/15 shrink-0">
             <Globe className="w-4 h-4 text-white" />
           </div>
 
-          <div className="hidden sm:block">
+          <div>
             <div className="flex items-center gap-1.5">
-              <h1 className="text-sm font-extrabold tracking-tight text-slate-900">
-                EARTH DETECTIVE
+              <h1 className="text-xs sm:text-sm font-orbitron font-extrabold tracking-wider text-slate-900">
+                PLANET DETECTIVE
               </h1>
-              <span className="px-2 py-0.5 rounded-md text-[9px] font-bold bg-emerald-50 text-[#15803D] border border-emerald-200/80 uppercase">
+              <span className="px-1.5 py-0.5 rounded-md text-[8px] sm:text-[9px] font-orbitron font-bold bg-emerald-50 text-[#15803D] border border-emerald-200/80 uppercase">
                 NASA 2026
               </span>
             </div>
-            <p className="text-[11px] font-medium text-slate-500">
-              Earth System Trend Detective • Eco-Tracker
+            <p className="text-[10px] font-space text-slate-500 font-medium hidden sm:block">
+              Planetary System Trend Detective • Eco-Tracker
             </p>
           </div>
 
@@ -73,12 +76,12 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
                   onSelectPlanet(p);
                 }
               }}
-              className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-bold text-[#0369A1] focus:outline-none focus:border-[#0369A1] cursor-pointer hover:bg-sky-50/50 transition-colors"
+              className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-orbitron font-bold text-[#0369A1] focus:outline-none focus:border-[#0369A1] cursor-pointer hover:bg-sky-50/50 transition-colors"
             >
               {SOLAR_PLANETS.map((planet) => (
                 <option key={planet.id} value={planet.id}>
                   {planet.id === 'sun'
-                    ? '☀️ The Sun'
+                    ? '☀️ Sun'
                     : planet.id === 'earth'
                     ? '🌍 Earth'
                     : planet.id === 'mars'
@@ -99,7 +102,7 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
               soundManager.playClick();
               onOpenScenarios();
             }}
-            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase bg-slate-50 hover:bg-sky-50 text-slate-700 hover:text-[#0369A1] border border-slate-200 hover:border-sky-300 transition-all shadow-sm"
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-orbitron font-bold uppercase bg-slate-50 hover:bg-sky-50 text-slate-700 hover:text-[#0369A1] border border-slate-200 hover:border-sky-300 transition-all shadow-xs"
             title="Investigate Forensic Divergence Scenarios"
           >
             <Search className="w-3.5 h-3.5 text-[#0369A1]" />
@@ -108,12 +111,12 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
         </div>
 
         {/* Top-Right Mission Control Utility HUD */}
-        <div className="pointer-events-auto flex items-center gap-2 bg-white/75 backdrop-blur-xl border border-white/80 rounded-2xl p-1.5 sm:p-2 shadow-lg shadow-slate-200/50">
+        <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2 bg-white/85 backdrop-blur-xl border border-white/90 rounded-2xl p-1.5 sm:p-2 shadow-xl shadow-slate-200/50">
           {/* Sound / Sonification Toggle */}
           <button
             onClick={toggleSound}
             aria-label={isMuted ? 'Unmute Audio' : 'Mute Audio'}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-orbitron font-semibold border transition-all ${
               !isMuted
                 ? 'bg-sky-50 text-[#0369A1] border-sky-200 hover:bg-sky-100/60'
                 : 'bg-slate-50 text-slate-500 border-slate-200 hover:text-slate-900'
@@ -125,33 +128,33 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
             ) : (
               <VolumeX className="w-4 h-4 text-slate-400" />
             )}
-            <span className="hidden sm:inline">{!isMuted ? 'Audio ON' : 'Muted'}</span>
+            <span className="hidden sm:inline">{!isMuted ? 'Audio' : 'Muted'}</span>
           </button>
 
-          {/* Cloud Database / Detective Logbook Sync (Static green dot - NO pinging) */}
+          {/* Cloud Database / Detective Logbook Sync (NO DOTS) */}
           <button
             onClick={() => {
               soundManager.playClick();
               onOpenLogbook();
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 hover:bg-emerald-50 text-slate-700 hover:text-[#15803D] border border-slate-200 hover:border-emerald-300 transition-all"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-orbitron font-semibold bg-slate-50 hover:bg-emerald-50 text-slate-700 hover:text-[#15803D] border border-slate-200 hover:border-emerald-300 transition-all"
             title="Supabase Investigation Logbook"
           >
             <Database className="w-3.5 h-3.5 text-[#15803D]" />
-            <span className="hidden sm:inline">Detective Log</span>
+            <span className="hidden sm:inline">Logbook</span>
           </button>
 
-          {/* NASA Fleet Briefing (Clean static icon - NO yellow sparkle badge) */}
+          {/* NASA Fleet Briefing */}
           <button
             onClick={() => {
               soundManager.playClick();
               onOpenBriefing();
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#0369A1] text-white hover:bg-[#025684] shadow-sm shadow-sky-900/20 transition-all"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-orbitron font-bold bg-[#0369A1] text-white hover:bg-[#025684] shadow-sm shadow-sky-900/20 transition-all"
             title="NASA Science & Satellite Fleet Briefing"
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">NASA Fleet</span>
+            <span className="hidden sm:inline">Fleet</span>
           </button>
         </div>
       </div>

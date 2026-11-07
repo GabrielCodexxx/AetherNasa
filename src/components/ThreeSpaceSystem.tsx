@@ -920,9 +920,11 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
+    let mouseDownPos = { x: 0, y: 0 };
     const handleMouseDown = (e: MouseEvent) => {
       isDragging = true;
       prevMouse = { x: e.clientX, y: e.clientY };
+      mouseDownPos = { x: e.clientX, y: e.clientY };
     };
 
     let lastRaycastTime = 0;
@@ -972,21 +974,24 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       }
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: MouseEvent) => {
       if (!isDragging) return;
       isDragging = false;
 
-      raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(pickableTargets, false);
-      for (const hit of intersects) {
-        if (hit.object.userData?.isHotspot) {
-          soundManager.playClick();
-          onSelectHotspot(hit.object.userData.data);
-          return;
-        } else if (hit.object.userData?.isPlanet) {
-          soundManager.playClick();
-          onSelectPlanet(hit.object.userData.data);
-          return;
+      const dist = Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y);
+      if (dist < 7) {
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(pickableTargets, false);
+        for (const hit of intersects) {
+          if (hit.object.userData?.isHotspot) {
+            soundManager.playClick();
+            onSelectHotspot(hit.object.userData.data);
+            return;
+          } else if (hit.object.userData?.isPlanet) {
+            soundManager.playClick();
+            onSelectPlanet(hit.object.userData.data);
+            return;
+          }
         }
       }
     };

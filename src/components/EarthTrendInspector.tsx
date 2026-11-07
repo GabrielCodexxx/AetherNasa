@@ -316,7 +316,7 @@ export const EarthTrendInspector: React.FC<EarthTrendInspectorProps> = ({
                 soundManager.playClick();
                 setActiveTab('synthesis');
               }}
-              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase transition-all flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-lg text-[10px] font-orbitron font-bold uppercase transition-all flex items-center gap-1 ${
                 activeTab === 'synthesis'
                   ? 'bg-white text-[#0369A1] shadow-xs'
                   : 'text-slate-500 hover:text-slate-800'
@@ -331,7 +331,7 @@ export const EarthTrendInspector: React.FC<EarthTrendInspectorProps> = ({
                 soundManager.playClick();
                 setActiveTab('divergence');
               }}
-              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase transition-all flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-lg text-[10px] font-orbitron font-bold uppercase transition-all flex items-center gap-1 ${
                 activeTab === 'divergence'
                   ? 'bg-white text-[#15803D] shadow-xs'
                   : 'text-slate-500 hover:text-slate-800'
@@ -343,7 +343,7 @@ export const EarthTrendInspector: React.FC<EarthTrendInspectorProps> = ({
           </div>
 
           {/* Scientific Significance Badge (NO DOTS) */}
-          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-emerald-50 text-[#15803D] border border-emerald-200 flex items-center gap-1">
+          <span className="px-2 py-0.5 rounded-md text-[10px] font-orbitron font-bold uppercase bg-emerald-50 text-[#15803D] border border-emerald-200 flex items-center gap-1">
             <ShieldCheck className="w-3 h-3 text-[#15803D]" />
             p &lt; 0.001
           </span>
@@ -351,10 +351,10 @@ export const EarthTrendInspector: React.FC<EarthTrendInspectorProps> = ({
 
         {/* Variable Title */}
         <div>
-          <h3 className="text-lg font-extrabold text-slate-900 leading-tight">
+          <h3 className="text-base sm:text-lg font-orbitron font-extrabold text-slate-900 leading-tight">
             {trend.name}
           </h3>
-          <p className="text-xs font-medium text-slate-500 mt-1">
+          <p className="text-xs font-space font-medium text-slate-500 mt-1">
             Unit: <span className="text-[#0369A1] font-bold">{trend.metricUnit}</span> • Year:{' '}
             <span className="text-slate-900 font-bold">{currentYear}</span>
           </p>
@@ -366,18 +366,18 @@ export const EarthTrendInspector: React.FC<EarthTrendInspectorProps> = ({
             {/* Live Metrics: Current Value & Rate */}
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2.5 rounded-2xl bg-slate-50/90 border border-slate-200/80 shadow-xs">
-                <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                <span className="text-slate-400 block text-[10px] uppercase font-space font-bold tracking-wider">
                   Value in {currentYear}
                 </span>
-                <span className="text-base font-black text-[#0369A1]">
+                <span className="text-base font-orbitron font-black text-[#0369A1]">
                   {currentPoint.value} {trend.metricUnit}
                 </span>
               </div>
               <div className="p-2.5 rounded-2xl bg-slate-50/90 border border-slate-200/80 shadow-xs">
-                <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                <span className="text-slate-400 block text-[10px] uppercase font-space font-bold tracking-wider">
                   Decadal Trajectory
                 </span>
-                <span className="text-xs font-bold text-[#15803D] flex items-center gap-1 mt-0.5">
+                <span className="text-xs font-orbitron font-bold text-[#15803D] flex items-center gap-1 mt-0.5">
                   {trend.trendDirection === 'rising' || trend.trendDirection === 'accelerating' ? (
                     <ArrowUpRight className="w-3.5 h-3.5 text-rose-600" />
                   ) : (

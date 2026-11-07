@@ -67,3 +67,12 @@ input[type=range]::-moz-range-thumb {
   border: 1.5px solid #ffffff;
   box-shadow: 0 1px 4px rgba(3, 105, 161, 0.35);
 }
+
+/* Sci-Fi Aerospace & Modern Display Typography */
+.font-orbitron {
+  font-family: 'Orbitron', 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+}
+
+.font-space {
+  font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+}
