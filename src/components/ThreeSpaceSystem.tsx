@@ -486,7 +486,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       powerPreference: 'high-performance',
     });
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.35;
     container.innerHTML = '';
@@ -562,6 +562,9 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
     const milkyWay = new THREE.Points(mwGeo, mwMat);
     scene.add(milkyWay);
 
+    // Dedicated array of pickable meshes (15 objects instead of 10,000 for instant 60 FPS raycasting)
+    const pickableTargets: THREE.Object3D[] = [];
+
     // 3. Central Sun with Radiant Corona
     const sunData = SOLAR_PLANETS[0];
     const sunGeo = new THREE.SphereGeometry(sunData.radius, 48, 48);
@@ -570,6 +573,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
     sunMesh.userData = { isPlanet: true, data: sunData };
     scene.add(sunMesh);
     planetMeshesRef.current.set(sunData.id, sunMesh);
+    pickableTargets.push(sunMesh);
 
     const coronaGeo = new THREE.SphereGeometry(sunData.radius * 1.35, 32, 32);
     const coronaMat = new THREE.ShaderMaterial({
@@ -673,6 +677,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         const earthMesh = new THREE.Mesh(earthGeo, earthMat);
         earthMesh.userData = { isPlanet: true, data: planet };
         pGroup.add(earthMesh);
+        pickableTargets.push(earthMesh);
 
         // Atmosphere halo
         const atmosGeo = new THREE.SphereGeometry(planet.radius * 1.05, 32, 32);
@@ -718,7 +723,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         moonMesh.position.set(5.2, 1.2, 0);
         pGroup.add(moonMesh);
 
-        // Hotspot Pins on Earth (Clean Static Pins - NO pinging animation)
+        // Hotspot Telemetry Needles on Earth (Clean Architectural Beacons - NO DOTS)
         EARTH_HOTSPOTS.forEach((hs) => {
           const pos = latLonToVector3(hs.lat, hs.lon, planet.radius);
           const norm = pos.clone().normalize();
@@ -733,29 +738,19 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
               : 0xdc2626;
 
           const isSelected = selectedHotspotId === hs.id;
-          const pinGeo = new THREE.SphereGeometry(isSelected ? 0.22 : 0.14, 16, 16);
-          const pinMat = new THREE.MeshStandardMaterial({
+          // Sleek 3D telemetry station needle (architectural, not a dot)
+          const needleGeo = new THREE.CylinderGeometry(0.02, 0.08, isSelected ? 0.65 : 0.45, 8);
+          const needleMat = new THREE.MeshStandardMaterial({
             color: isSelected ? 0x0369a1 : color,
-            roughness: 0.3,
-            metalness: 0.2,
+            roughness: 0.25,
+            metalness: 0.4,
           });
-          const pin = new THREE.Mesh(pinGeo, pinMat);
-          pin.position.copy(pos.clone().add(norm.clone().multiplyScalar(0.08)));
-          pin.userData = { isHotspot: true, data: hs };
-          pGroup.add(pin);
-
-          // Clean, static subtle halo ring (NO pinging animation)
-          const haloGeo = new THREE.RingGeometry(0.16, 0.22, 24);
-          const haloMat = new THREE.MeshBasicMaterial({
-            color,
-            side: THREE.DoubleSide,
-            transparent: true,
-            opacity: 0.6,
-          });
-          const halo = new THREE.Mesh(haloGeo, haloMat);
-          halo.position.copy(pos.clone().add(norm.clone().multiplyScalar(0.03)));
-          halo.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), norm);
-          pGroup.add(halo);
+          const needle = new THREE.Mesh(needleGeo, needleMat);
+          needle.position.copy(pos.clone().add(norm.clone().multiplyScalar(0.22)));
+          needle.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), norm);
+          needle.userData = { isHotspot: true, data: hs };
+          pGroup.add(needle);
+          pickableTargets.push(needle);
         });
       } else {
         // Other Planets with Real Procedural Textures
@@ -770,6 +765,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         const pMesh = new THREE.Mesh(pGeo, pMat);
         pMesh.userData = { isPlanet: true, data: planet };
         pGroup.add(pMesh);
+        pickableTargets.push(pMesh);
 
         // Saturn Rings with Transparent Cassini Division
         if (planet.hasRings && planet.ringInnerRadius && planet.ringOuterRadius) {
@@ -929,6 +925,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       prevMouse = { x: e.clientX, y: e.clientY };
     };
 
+    let lastRaycastTime = 0;
     const handleMouseMove = (e: MouseEvent) => {
       const rect = container.getBoundingClientRect();
       mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
@@ -948,25 +945,29 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
 
         prevMouse = { x: e.clientX, y: e.clientY };
       } else {
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(scene.children, true);
-        let foundHover = false;
-        for (const hit of intersects) {
-          if (hit.object.userData?.isHotspot) {
-            setHoveredLabel(hit.object.userData.data.name);
-            container.style.cursor = 'pointer';
-            foundHover = true;
-            break;
-          } else if (hit.object.userData?.isPlanet) {
-            setHoveredLabel(hit.object.userData.data.name);
-            container.style.cursor = 'pointer';
-            foundHover = true;
-            break;
+        const now = performance.now();
+        if (now - lastRaycastTime > 45) {
+          lastRaycastTime = now;
+          raycaster.setFromCamera(mouse, camera);
+          const intersects = raycaster.intersectObjects(pickableTargets, false);
+          let foundHover = false;
+          for (const hit of intersects) {
+            if (hit.object.userData?.isHotspot) {
+              setHoveredLabel(hit.object.userData.data.name);
+              container.style.cursor = 'pointer';
+              foundHover = true;
+              break;
+            } else if (hit.object.userData?.isPlanet) {
+              setHoveredLabel(hit.object.userData.data.name);
+              container.style.cursor = 'pointer';
+              foundHover = true;
+              break;
+            }
           }
-        }
-        if (!foundHover) {
-          setHoveredLabel(null);
-          container.style.cursor = 'grab';
+          if (!foundHover) {
+            setHoveredLabel(null);
+            container.style.cursor = 'grab';
+          }
         }
       }
     };
@@ -976,7 +977,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       isDragging = false;
 
       raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(scene.children, true);
+      const intersects = raycaster.intersectObjects(pickableTargets, false);
       for (const hit of intersects) {
         if (hit.object.userData?.isHotspot) {
           soundManager.playClick();
@@ -1010,6 +1011,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
 
     // 9. Animation Loop
     let animId: number;
+    let lastCalloutUpdate = 0;
     const clock = new THREE.Clock();
 
     const animate = () => {
@@ -1063,47 +1065,51 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       // Rotate Starfield subtly
       stars.rotation.y += 0.0001;
 
-      // Calculate 3D Callout Positions for Structure Cutaway (throttled to ~32ms - matching Image 3)
+      // Calculate 3D Callout Positions for Structure Cutaway (throttled to 80ms - zero UI stutter)
       if (viewMode === 'structure' && structureGroupRef.current && container) {
-        const curPlanet = SOLAR_PLANETS.find((p) => p.id === selectedPlanetId) || SOLAR_PLANETS[3];
-        const r = curPlanet.radius;
-        const cw = container.clientWidth;
-        const ch = container.clientHeight;
-        const callouts: StructureCallout[] = [];
+        const now = performance.now();
+        if (now - lastCalloutUpdate > 80) {
+          lastCalloutUpdate = now;
+          const curPlanet = SOLAR_PLANETS.find((p) => p.id === selectedPlanetId) || SOLAR_PLANETS[3];
+          const pr = curPlanet.radius;
+          const cw = container.clientWidth;
+          const ch = container.clientHeight;
+          const callouts: StructureCallout[] = [];
 
-        curPlanet.layers.forEach((layer, idx) => {
-          const rOuter = r * layer.thicknessRadius;
-          const rInner =
-            idx < curPlanet.layers.length - 1
-              ? r * curPlanet.layers[idx + 1].thicknessRadius
-              : 0;
-          const rMid = (rOuter + rInner) / 2;
+          curPlanet.layers.forEach((layer, idx) => {
+            const rOuter = pr * layer.thicknessRadius;
+            const rInner =
+              idx < curPlanet.layers.length - 1
+                ? pr * curPlanet.layers[idx + 1].thicknessRadius
+                : 0;
+            const rMid = (rOuter + rInner) / 2;
 
-          const ptLocal = new THREE.Vector3(rMid * 0.92, rMid * 0.22, 0.04);
-          const ptWorld = ptLocal.applyMatrix4(structureGroupRef.current!.matrixWorld);
-          ptWorld.project(camera);
+            const ptLocal = new THREE.Vector3(rMid * 0.92, rMid * 0.22, 0.04);
+            const ptWorld = ptLocal.applyMatrix4(structureGroupRef.current!.matrixWorld);
+            ptWorld.project(camera);
 
-          if (ptWorld.z < 1) {
-            const startX = (ptWorld.x * 0.5 + 0.5) * cw;
-            const startY = (-ptWorld.y * 0.5 + 0.5) * ch;
+            if (ptWorld.z < 1) {
+              const startX = (ptWorld.x * 0.5 + 0.5) * cw;
+              const startY = (-ptWorld.y * 0.5 + 0.5) * ch;
 
-            // Anchor to the right of cutaway
-            const endX = Math.min(cw - 240, Math.max(startX + 90, cw * 0.62));
-            const endY = Math.max(100, Math.min(ch - 140, startY + (idx - 1.5) * 44));
+              // Anchor to the right of cutaway
+              const endX = Math.min(cw - 240, Math.max(startX + 90, cw * 0.62));
+              const endY = Math.max(100, Math.min(ch - 140, startY + (idx - 1.5) * 44));
 
-            callouts.push({
-              name: layer.name,
-              subtitle: layer.subtitle,
-              composition: layer.composition,
-              color: layer.color,
-              startX,
-              startY,
-              endX,
-              endY,
-            });
-          }
-        });
-        setStructureCallouts(callouts);
+              callouts.push({
+                name: layer.name,
+                subtitle: layer.subtitle,
+                composition: layer.composition,
+                color: layer.color,
+                startX,
+                startY,
+                endX,
+                endY,
+              });
+            }
+          });
+          setStructureCallouts(callouts);
+        }
       }
 
       renderer.render(scene, camera);
@@ -1160,22 +1166,20 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       {/* 3D WebGL Canvas */}
       <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
 
-      {/* 3D Structure Cutaway Callout Annotations Overlay (Glassmorphic Eco-Tracker Light Mode) */}
+      {/* 3D Structure Cutaway Callout Annotations Overlay (Precision Eco-Tracker - NO DOTS) */}
       {viewMode === 'structure' && structureCallouts.length > 0 && (
         <div className="absolute inset-0 pointer-events-none z-20">
           <svg className="w-full h-full">
             {structureCallouts.map((c, i) => (
               <g key={i}>
-                {/* 3D Surface Anchor Dot (Clean Static Dot - NO pinging/pulsing) */}
-                <circle cx={c.startX} cy={c.startY} r={4.5} fill={c.color} />
-                <circle
-                  cx={c.startX}
-                  cy={c.startY}
-                  r={7.5}
-                  fill="none"
-                  stroke={c.color}
-                  strokeWidth={1.5}
-                  opacity={0.6}
+                {/* 3D Surface Anchor Diamond (Precision Geometric Marker - NO DOTS) */}
+                <rect
+                  x={c.startX - 3.5}
+                  y={c.startY - 3.5}
+                  width={7}
+                  height={7}
+                  fill={c.color}
+                  transform={`rotate(45 ${c.startX} ${c.startY})`}
                 />
 
                 {/* Angled Leader Line */}
@@ -1187,12 +1191,18 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
                   strokeDasharray="4,2"
                   opacity={0.85}
                 />
-                <circle cx={c.endX} cy={c.endY} r={3} fill={c.color} />
+                <rect
+                  x={c.endX - 2}
+                  y={c.endY - 2}
+                  width={4}
+                  height={4}
+                  fill={c.color}
+                />
               </g>
             ))}
           </svg>
 
-          {/* Callout Cards (Glassmorphic Light Mode) */}
+          {/* Callout Cards (Precision Glassmorphic Light Mode) */}
           {structureCallouts.map((c, i) => (
             <div
               key={i}
@@ -1202,17 +1212,17 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
                 top: `${c.endY - 26}px`,
               }}
             >
-              <div className="bg-white/85 backdrop-blur-md border border-white/80 rounded-2xl px-3.5 py-2 shadow-lg shadow-slate-200/60 max-w-[240px]">
-                <div className="flex items-center gap-1.5">
+              <div className="bg-white/90 backdrop-blur-md border border-slate-200/90 rounded-2xl px-3.5 py-2 shadow-lg shadow-slate-200/60 max-w-[240px]">
+                <div className="flex items-center gap-2">
                   <span
-                    className="w-2 h-2 rounded-full shrink-0"
+                    className="w-1.5 h-3.5 rounded-xs shrink-0"
                     style={{ backgroundColor: c.color }}
                   ></span>
                   <span className="text-xs font-black tracking-tight text-slate-900 uppercase truncate">
                     {c.name}
                   </span>
                 </div>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-[#0369A1]">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[#0369A1] mt-0.5">
                   {c.subtitle}
                 </div>
                 <div className="text-[9px] text-slate-500 truncate">

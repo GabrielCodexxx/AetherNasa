@@ -157,7 +157,7 @@ export const EarthScienceModal: React.FC<EarthScienceModalProps> = ({ isOpen, on
                   <div key={sat.id} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1.5 shadow-xs">
                     <div className="flex items-center justify-between">
                       <span className="font-extrabold text-slate-900 text-sm">{sat.name}</span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-[#15803D] border border-emerald-200">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-[#15803D] border border-emerald-200">
                         {sat.status}
                       </span>
                     </div>

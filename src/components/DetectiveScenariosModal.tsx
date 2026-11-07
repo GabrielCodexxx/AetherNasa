@@ -69,7 +69,7 @@ export const DetectiveScenariosModal: React.FC<DetectiveScenariosModalProps> = (
         {/* Header Bar */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-200">
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-sky-50 border border-sky-200 text-[#0369A1] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+            <span className="px-3 py-1 rounded-lg bg-sky-50 border border-sky-200 text-[#0369A1] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
               <Search className="w-3.5 h-3.5 text-[#0369A1]" />
               Earth Trend Detective Case
             </span>
@@ -185,16 +185,20 @@ export const DetectiveScenariosModal: React.FC<DetectiveScenariosModalProps> = (
               <ChevronLeft className="w-4 h-4" />
             </button>
 
-            {/* Stepper Dots */}
+            {/* Case File Segmented Tabs (NO DOTS) */}
             <div className="flex items-center gap-1.5 px-2">
               {DETECTIVE_SCENARIOS.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleApplyScenario(idx)}
-                  className={`h-2 rounded-full transition-all ${
-                    idx === currentIdx ? 'w-6 bg-[#0369A1]' : 'w-2 bg-slate-200 hover:bg-slate-400'
+                  className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${
+                    idx === currentIdx
+                      ? 'bg-[#0369A1] text-white shadow-xs'
+                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-900'
                   }`}
-                />
+                >
+                  Case 0{idx + 1}
+                </button>
               ))}
             </div>
 

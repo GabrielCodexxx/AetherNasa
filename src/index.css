@@ -40,3 +40,30 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #0369a1;
 }
+
+/* Precision Rectangular Telemetry Slider Thumb (No Round Dots) */
+input[type=range] {
+  -webkit-appearance: none;
+  background: #e2e8f0;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 20px;
+  border-radius: 3px;
+  background: #0369a1;
+  cursor: ew-resize;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(3, 105, 161, 0.35);
+}
+
+input[type=range]::-moz-range-thumb {
+  width: 10px;
+  height: 20px;
+  border-radius: 3px;
+  background: #0369a1;
+  cursor: ew-resize;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(3, 105, 161, 0.35);
+}

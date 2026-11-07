@@ -146,16 +146,20 @@ export const DetectiveLogModal: React.FC<DetectiveLogModalProps> = ({
               <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
                 TREND DETECTIVE CASE LOGBOOK
               </h2>
-              <p className="text-xs text-slate-500 font-medium flex items-center gap-2">
+              <div className="flex items-center gap-2 mt-0.5">
                 <span
-                  className={`w-2 h-2 rounded-full ${
-                    isSupabaseConfigured ? 'bg-[#15803D]' : 'bg-amber-500'
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
+                    isSupabaseConfigured ? 'bg-emerald-100 text-[#15803D]' : 'bg-amber-100 text-amber-800'
                   }`}
-                ></span>
-                {isSupabaseConfigured
-                  ? 'Connected to Supabase Cloud Database'
-                  : 'Local Storage Mode'}
-              </p>
+                >
+                  {isSupabaseConfigured ? 'CLOUD SYNC' : 'LOCAL CACHE'}
+                </span>
+                <span className="text-xs text-slate-500 font-medium">
+                  {isSupabaseConfigured
+                    ? 'Connected to Supabase Cloud Database'
+                    : 'Browser Local Storage Mode'}
+                </span>
+              </div>
             </div>
           </div>
           <button

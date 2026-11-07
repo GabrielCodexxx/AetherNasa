@@ -8,7 +8,6 @@ import {
   Database,
 } from 'lucide-react';
 import { soundManager } from '../utils/soundEffects';
-import { isSupabaseConfigured } from '../services/supabase';
 import { SOLAR_PLANETS } from '../utils/earthSystemData';
 import type { SystemViewMode, PlanetData } from '../types/earthSystem';
 
@@ -45,14 +44,8 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
       <div className="flex items-center justify-between gap-3 max-w-7xl mx-auto">
         {/* Top-Left Brand & Planet Switcher (Glassmorphic Eco-Tracker Light Mode) */}
         <div className="pointer-events-auto flex items-center gap-3 bg-white/75 backdrop-blur-xl border border-white/80 rounded-2xl px-4 py-2.5 shadow-lg shadow-slate-200/50">
-          <div className="relative">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0369A1] to-[#15803D] flex items-center justify-center shadow-md shadow-sky-900/15">
-              <Globe className="w-4 h-4 text-white" />
-            </div>
-            {/* Clean static indicator dot (NO pinging animation) */}
-            <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#15803D] border-2 border-white"></span>
-            </span>
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0369A1] to-[#15803D] flex items-center justify-center shadow-md shadow-sky-900/15">
+            <Globe className="w-4 h-4 text-white" />
           </div>
 
           <div className="hidden sm:block">
@@ -60,7 +53,7 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
               <h1 className="text-sm font-extrabold tracking-tight text-slate-900">
                 EARTH DETECTIVE
               </h1>
-              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-[#15803D] border border-emerald-200/80 uppercase">
+              <span className="px-2 py-0.5 rounded-md text-[9px] font-bold bg-emerald-50 text-[#15803D] border border-emerald-200/80 uppercase">
                 NASA 2026
               </span>
             </div>
@@ -146,9 +139,6 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
           >
             <Database className="w-3.5 h-3.5 text-[#15803D]" />
             <span className="hidden sm:inline">Detective Log</span>
-            {isSupabaseConfigured && (
-              <span className="w-2 h-2 rounded-full bg-[#15803D]"></span>
-            )}
           </button>
 
           {/* NASA Fleet Briefing (Clean static icon - NO yellow sparkle badge) */}

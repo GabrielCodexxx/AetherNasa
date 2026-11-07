@@ -96,16 +96,8 @@ export function App() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-[#f8fafc] text-slate-800 select-none font-sans">
-      {/* Large, blurred abstract gradients of Deep Ocean Blue (#0369A1) and Forest Green (#15803D) in the deep background */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute -top-[12%] -left-[10%] w-[55vw] h-[55vw] rounded-full bg-sky-200/50 blur-[130px]" />
-        <div className="absolute top-[20%] -right-[10%] w-[50vw] h-[50vw] rounded-full bg-emerald-200/40 blur-[140px]" />
-        <div className="absolute -bottom-[20%] left-[20%] w-[60vw] h-[60vw] rounded-full bg-teal-100/50 blur-[150px]" />
-        <div className="absolute top-[60%] left-[5%] w-[35vw] h-[35vw] rounded-full bg-blue-100/40 blur-[120px]" />
-      </div>
-
       {/* 1. Full-Screen 3D Universe, Solar System, Asteroid Belt, Earth & Structure Cutaway */}
-      <div className="absolute inset-0 z-10">
+      <div className="absolute inset-0 z-0">
         <ThreeSpaceSystem
           viewMode={viewMode}
           selectedPlanetId={selectedPlanetId}
@@ -116,7 +108,7 @@ export function App() {
         />
       </div>
 
-      {/* 2. Sleek Top Bar HUD: Title, Planet Dropdown, Sound, Logbook & Briefing */}
+      {/* 2. Next-Gen NASA Space Command Capsule Header (No dots) */}
       <EarthSystemHeader
         viewMode={viewMode}
         selectedPlanetId={selectedPlanetId}
@@ -132,7 +124,7 @@ export function App() {
         onOpenScenarios={() => setShowScenarios(true)}
       />
 
-      {/* 3. Left Sci-Fi Planetary HUD (Matching User's Image 2 & Image 3) */}
+      {/* 3. Left Planetary Intelligence & Structure Dossier (No dots) */}
       <PlanetHUD
         planet={currentPlanet}
         viewMode={viewMode}
@@ -142,7 +134,7 @@ export function App() {
         onOpenEncyclopedia={() => setShowBriefing(true)}
       />
 
-      {/* 4. Floating Right Telemetry Inspector (Earth Trend Detective Dossier) */}
+      {/* 4. Right Regional Trend Divergence Dossier (No dots) */}
       {!isStructureMode && (
         <div className="absolute top-20 right-4 sm:right-6 z-20 pointer-events-auto hidden md:block">
           <EarthTrendInspector
@@ -155,7 +147,7 @@ export function App() {
         </div>
       )}
 
-      {/* 5. Floating Bottom HUD: Timeline Scrubber (1980 - 2026) & Domain Filters */}
+      {/* 5. Bottom Precision Timeline Scrubber (1980 - 2026) */}
       <div className="absolute bottom-4 inset-x-4 sm:inset-x-6 z-30 pointer-events-none flex flex-col items-center">
         <div className="pointer-events-auto w-full max-w-4xl">
           <EarthTimelineScrubber

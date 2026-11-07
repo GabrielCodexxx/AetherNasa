@@ -156,12 +156,12 @@ export const PlanetHUD: React.FC<PlanetHUDProps> = ({
                       <div className="flex items-center justify-between">
                         <span className="font-extrabold text-slate-900 text-xs tracking-wider flex items-center gap-2">
                           <span
-                            className="w-2.5 h-2.5 rounded-full"
+                            className="w-1.5 h-3.5 rounded-xs"
                             style={{ backgroundColor: layer.color }}
                           ></span>
                           {layer.name}
                         </span>
-                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
                           {Math.round(layer.thicknessRadius * 100)}% RADIUS
                         </span>
                       </div>
