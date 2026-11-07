@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wind, Droplets, Zap, Apple, Shield, Heart, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Wind, Droplets, Zap, Apple, Shield, Heart, TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react';
 import type { OutpostResources, ResourceDeltas } from '../types/trainer';
 
 interface ResourceDashboardProps {
@@ -14,28 +14,50 @@ export const ResourceDashboard: React.FC<ResourceDashboardProps> = ({
   stabilityScore,
 }) => {
   const getStatusColor = (val: number) => {
-    if (val > 60) return { bar: 'bg-cyan-500', text: 'text-cyan-400', border: 'border-cyan-500/30' };
-    if (val > 25) return { bar: 'bg-amber-500', text: 'text-amber-400', border: 'border-amber-500/30' };
-    return { bar: 'bg-red-500', text: 'text-red-400', border: 'border-red-500/40' };
+    if (val > 60) {
+      return {
+        bar: 'bg-gradient-to-r from-cyan-500 to-blue-500',
+        text: 'text-cyan-400',
+        border: 'border-cyan-500/30',
+        dot: 'bg-cyan-400',
+        glow: 'shadow-cyan-500/10',
+      };
+    }
+    if (val > 25) {
+      return {
+        bar: 'bg-gradient-to-r from-amber-500 to-yellow-500',
+        text: 'text-amber-400',
+        border: 'border-amber-500/30',
+        dot: 'bg-amber-400',
+        glow: 'shadow-amber-500/10',
+      };
+    }
+    return {
+      bar: 'bg-gradient-to-r from-red-600 to-rose-500',
+      text: 'text-rose-400',
+      border: 'border-rose-500/40',
+      dot: 'bg-rose-500 animate-ping',
+      glow: 'shadow-rose-500/20',
+    };
   };
 
   const renderDelta = (delta: number) => {
     if (delta > 0) {
       return (
-        <span className="flex items-center text-xs text-emerald-400 font-mono">
+        <span className="flex items-center text-[11px] text-emerald-400 font-mono font-semibold">
           <TrendingUp className="w-3 h-3 mr-0.5" /> +{delta}/s
         </span>
       );
     }
     if (delta < 0) {
       return (
-        <span className="flex items-center text-xs text-rose-400 font-mono">
+        <span className="flex items-center text-[11px] text-rose-400 font-mono font-semibold">
           <TrendingDown className="w-3 h-3 mr-0.5" /> {delta}/s
         </span>
       );
     }
     return (
-      <span className="flex items-center text-xs text-slate-400 font-mono">
+      <span className="flex items-center text-[11px] text-slate-500 font-mono">
         <Minus className="w-3 h-3 mr-0.5" /> 0.0/s
       </span>
     );
@@ -59,7 +81,7 @@ export const ResourceDashboard: React.FC<ResourceDashboardProps> = ({
       sub: '98% Recycled Graywater',
     },
     {
-      name: 'Energy Grid',
+      name: 'Power Grid',
       icon: Zap,
       val: Math.round(resources.power),
       delta: deltas.power,
@@ -72,7 +94,7 @@ export const ResourceDashboard: React.FC<ResourceDashboardProps> = ({
       val: Math.round(resources.food),
       delta: deltas.food,
       unit: '%',
-      sub: 'Hydroponic Veggie Lab',
+      sub: 'Veggie Hydroponics',
     },
     {
       name: 'Radiation Shield',
@@ -83,51 +105,61 @@ export const ResourceDashboard: React.FC<ResourceDashboardProps> = ({
       sub: 'Regolith Sintered Vault',
     },
     {
-      name: 'Crew Focus / Morale',
+      name: 'Commander Focus',
       icon: Heart,
       val: Math.round(resources.morale),
       delta: deltas.morale,
       unit: '%',
-      sub: 'Commander Stress Index',
+      sub: 'Crew Morale & Health',
     },
   ];
 
   const stabilityTone =
     stabilityScore > 75
-      ? 'from-cyan-500 to-emerald-400 text-emerald-400'
+      ? 'from-cyan-500 to-emerald-400 text-emerald-400 border-emerald-500/30'
       : stabilityScore > 40
-      ? 'from-amber-500 to-yellow-400 text-amber-400'
-      : 'from-red-600 to-rose-500 text-rose-400';
+      ? 'from-amber-500 to-yellow-400 text-amber-400 border-amber-500/30'
+      : 'from-rose-600 to-red-500 text-rose-400 border-rose-500/40';
 
   return (
-    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 shadow-xl backdrop-blur-sm">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-800">
-        <div>
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <span>NASA ECLSS TELEMETRY CONSOLE</span>
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
-          </h2>
-          <p className="text-xs text-slate-400">Environmental Control and Life Support System (Active Balance Loop)</p>
+    <div className="hud-card rounded-2xl p-4 sm:p-5">
+      {/* Console Top Ticker */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-800/80">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-cyan-950/60 border border-cyan-500/30 text-cyan-300">
+            <Activity className="w-5 h-5 animate-pulse" />
+          </div>
+          <div>
+            <h2 className="text-sm font-bold tracking-wider text-white font-mono uppercase flex items-center gap-2">
+              <span>NASA ECLSS TELEMETRY MATRIX</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block shadow-sm shadow-emerald-400" />
+            </h2>
+            <p className="text-xs text-slate-400 font-mono">
+              REAL-TIME LIFE SUPPORT BALANCING &bull; ZERO LATENCY SUITE
+            </p>
+          </div>
         </div>
 
-        {/* Base Stability Gauge */}
-        <div className="flex items-center gap-3 bg-slate-950/80 px-4 py-2 rounded-xl border border-slate-800">
+        {/* Tactical Stability Score HUD Pill */}
+        <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 shadow-inner">
           <div className="text-right">
-            <div className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Outpost Stability</div>
+            <div className="text-[10px] text-slate-400 font-mono uppercase tracking-widest">
+              BASE STABILITY INDEX
+            </div>
             <div className={`text-xl font-black font-mono tracking-tight ${stabilityTone.split(' ')[2]}`}>
               {stabilityScore}%
             </div>
           </div>
-          <div className="w-16 h-2 bg-slate-800 rounded-full overflow-hidden">
+          <div className="w-20 h-2.5 bg-slate-800/80 rounded-full overflow-hidden p-0.5 border border-slate-700/50">
             <div
-              className={`h-full bg-gradient-to-r ${stabilityTone} transition-all duration-300`}
+              className={`h-full rounded-full bg-gradient-to-r ${stabilityTone} transition-all duration-300`}
               style={{ width: `${stabilityScore}%` }}
             />
           </div>
         </div>
       </div>
 
-      {/* Grid of Gauges */}
+      {/* Grid of Gauges with Crisp Aerospace Styling */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {items.map((item) => {
           const colors = getStatusColor(item.val);
@@ -135,30 +167,33 @@ export const ResourceDashboard: React.FC<ResourceDashboardProps> = ({
           return (
             <div
               key={item.name}
-              className={`bg-slate-950/60 border ${colors.border} rounded-xl p-3 flex flex-col justify-between transition-all hover:bg-slate-900/80`}
+              className={`bg-slate-950/70 border ${colors.border} rounded-xl p-3.5 flex flex-col justify-between transition-all hover:border-cyan-400/50 hover:bg-slate-900/90 shadow-md ${colors.glow}`}
             >
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-medium text-slate-300 truncate">{item.name}</span>
-                <Icon className={`w-4 h-4 ${colors.text}`} />
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-1.5 truncate">
+                  <span className={`w-1.5 h-1.5 rounded-full ${colors.dot}`} />
+                  <span className="text-xs font-semibold text-slate-300 truncate">{item.name}</span>
+                </div>
+                <Icon className={`w-3.5 h-3.5 ${colors.text} shrink-0`} />
               </div>
 
-              <div className="flex items-baseline justify-between mb-2">
-                <span className="text-2xl font-bold font-mono text-white tracking-tight">
+              <div className="flex items-baseline justify-between my-1.5">
+                <span className="text-2xl font-black font-mono text-white tracking-tight">
                   {item.val}
                   <span className="text-xs font-normal text-slate-400 ml-0.5">{item.unit}</span>
                 </span>
                 {renderDelta(item.delta)}
               </div>
 
-              {/* Progress Bar */}
-              <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mb-1.5">
+              {/* High-def Gauge Progress Line */}
+              <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden mb-2 border border-slate-800/80">
                 <div
-                  className={`h-full ${colors.bar} transition-all duration-300`}
+                  className={`h-full ${colors.bar} transition-all duration-300 rounded-full`}
                   style={{ width: `${Math.min(100, Math.max(0, item.val))}%` }}
                 />
               </div>
 
-              <span className="text-[10px] text-slate-400 truncate">{item.sub}</span>
+              <span className="text-[10px] text-slate-400 font-mono truncate">{item.sub}</span>
             </div>
           );
         })}
