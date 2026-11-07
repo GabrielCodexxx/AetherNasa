@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import type { PlanetData, HotspotMarker, SystemViewMode, NasaSatelliteMission } from '../types/earthSystem';
 import { SOLAR_PLANETS, EARTH_HOTSPOTS, NASA_FLEET } from '../utils/earthSystemData';
 import { soundManager } from '../utils/soundEffects';
-import { RotateCw, Grid, Globe, ZoomIn, ZoomOut, Layers, Compass } from 'lucide-react';
+import { Globe } from 'lucide-react';
 
 interface ThreeSpaceSystemProps {
   viewMode: SystemViewMode;
@@ -13,9 +13,11 @@ interface ThreeSpaceSystemProps {
   onSelectPlanet: (planet: PlanetData) => void;
   onSelectHotspot: (hotspot: HotspotMarker) => void;
   onSelectSatellite?: (satellite: NasaSatelliteMission) => void;
-  onTogglePlanetHud?: () => void;
-  isPlanetHudOpen?: boolean;
-  planetName?: string;
+  autoRotate?: boolean;
+  showGrid?: boolean;
+  showDivergenceLens?: boolean;
+  zoomInRef?: React.MutableRefObject<(() => void) | null>;
+  zoomOutRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 // Convert Lat/Lon to 3D Cartesian coordinates on a sphere of given radius
@@ -310,14 +312,13 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
   onSelectPlanet,
   onSelectHotspot,
   onSelectSatellite,
-  onTogglePlanetHud,
-  isPlanetHudOpen = false,
-  planetName,
+  autoRotate = true,
+  showGrid = true,
+  showDivergenceLens = false,
+  zoomInRef,
+  zoomOutRef,
 }) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
-  const [autoRotate, setAutoRotate] = useState(true);
-  const [showGrid, setShowGrid] = useState(true);
-  const [showDivergenceLens, setShowDivergenceLens] = useState(false);
   const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
 
   // Spherical Orbit & Camera Controller
@@ -442,6 +443,15 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
     orbitStateRef.current.radius = Math.min(maxR, Math.max(minR, newR));
     orbitStateRef.current.targetRadius = orbitStateRef.current.radius;
   };
+
+  useEffect(() => {
+    if (zoomInRef) {
+      zoomInRef.current = () => handleZoom(0.8);
+    }
+    if (zoomOutRef) {
+      zoomOutRef.current = () => handleZoom(1.25);
+    }
+  });
 
   // Main Three.js Scene Setup
   useEffect(() => {
@@ -1342,99 +1352,6 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
           <span>{hoveredLabel}</span>
         </div>
       )}
-
-      {/* 3D Viewport & Navigation Command Dock (Positioned at Top-Left, Unified with Planet Dossier - Zero Overlap!) */}
-      <div
-        className={`absolute top-20 z-20 flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/85 backdrop-blur-xl border border-white/90 shadow-xl shadow-slate-200/50 transition-all duration-300 font-sans pointer-events-auto ${
-          isPlanetHudOpen ? 'left-3 sm:left-[416px]' : 'left-4 sm:left-6'
-        }`}
-      >
-        {!isPlanetHudOpen && onTogglePlanetHud && (
-          <>
-            <button
-              onClick={() => {
-                soundManager.playClick();
-                onTogglePlanetHud();
-              }}
-              className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-sky-50 text-slate-800 hover:text-[#0369A1] border border-slate-200/90 text-xs font-orbitron font-bold flex items-center gap-1.5 transition-all shadow-xs"
-              title="Open Planetary Dossier"
-            >
-              <Compass className="w-3.5 h-3.5 text-[#0369A1]" />
-              <span>{planetName || 'Planet'} Dossier</span>
-            </button>
-            <div className="w-px h-5 bg-slate-200 mx-0.5" />
-          </>
-        )}
-
-        <button
-          onClick={() => handleZoom(0.8)}
-          className="p-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 hover:text-[#0369A1] hover:bg-sky-50 transition-all shadow-xs"
-          title="Zoom In"
-        >
-          <ZoomIn className="w-4 h-4" />
-        </button>
-
-        <button
-          onClick={() => handleZoom(1.25)}
-          className="p-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 hover:text-[#0369A1] hover:bg-sky-50 transition-all shadow-xs"
-          title="Zoom Out"
-        >
-          <ZoomOut className="w-4 h-4" />
-        </button>
-
-        <button
-          onClick={() => {
-            soundManager.playClick();
-            setAutoRotate(!autoRotate);
-          }}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-            autoRotate
-              ? 'bg-sky-50 text-[#0369A1] border border-sky-300 shadow-xs'
-              : 'bg-slate-50 text-slate-600 border border-slate-200/80 hover:text-slate-900'
-          }`}
-          title="Toggle Planetary Orbit Animation"
-        >
-          <RotateCw className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Orbit: {autoRotate ? 'ON' : 'OFF'}</span>
-        </button>
-
-        <button
-          onClick={() => {
-            soundManager.playClick();
-            setShowGrid(!showGrid);
-          }}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-            showGrid
-              ? 'bg-sky-50 text-[#0369A1] border border-sky-300 shadow-xs'
-              : 'bg-slate-50 text-slate-600 border border-slate-200/80 hover:text-slate-900'
-          }`}
-          title="Toggle Orbital Plane Coordinates"
-        >
-          <Grid className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Grid</span>
-        </button>
-
-        {/* Feature 2: 3D Dual-Pole Regional Divergence Heatmap */}
-        <button
-          onClick={() => {
-            soundManager.playClick();
-            const next = !showDivergenceLens;
-            setShowDivergenceLens(next);
-            if (divergenceMeshRef.current) {
-              divergenceMeshRef.current.visible = next;
-            }
-          }}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-orbitron font-bold transition-all ${
-            showDivergenceLens
-              ? 'bg-emerald-50 text-[#15803D] border border-emerald-300 shadow-xs'
-              : 'bg-slate-50 text-slate-600 border border-slate-200/80 hover:text-slate-900'
-          }`}
-          title="Toggle Dual-Pole Regional Divergence 3D Heatmap"
-        >
-          <Layers className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Divergence: {showDivergenceLens ? 'ON' : 'OFF'}</span>
-        </button>
-      </div>
     </div>
   );
 };

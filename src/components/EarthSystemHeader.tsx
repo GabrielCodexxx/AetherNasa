@@ -7,6 +7,11 @@ import {
   Database,
   Compass,
   FileText,
+  RotateCw,
+  Grid,
+  Layers,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-react';
 import aetherLogo from '../assets/images/logo/AetherLogo.jpg';
 import { soundManager } from '../utils/soundEffects';
@@ -23,6 +28,18 @@ interface EarthSystemHeaderProps {
   onOpenScenarios: () => void;
   onOpenPlanetology?: () => void;
   onOpenReport?: () => void;
+  // Left 3D Viewport & Dossier Controls
+  planetName?: string;
+  isPlanetHudOpen?: boolean;
+  onTogglePlanetHud?: () => void;
+  onZoomIn?: () => void;
+  onZoomOut?: () => void;
+  autoRotate?: boolean;
+  onToggleAutoRotate?: () => void;
+  showGrid?: boolean;
+  onToggleGrid?: () => void;
+  showDivergenceLens?: boolean;
+  onToggleDivergenceLens?: () => void;
 }
 
 export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
@@ -33,6 +50,17 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
   onOpenScenarios,
   onOpenPlanetology,
   onOpenReport,
+  planetName,
+  isPlanetHudOpen = false,
+  onTogglePlanetHud,
+  onZoomIn,
+  onZoomOut,
+  autoRotate = true,
+  onToggleAutoRotate,
+  showGrid = true,
+  onToggleGrid,
+  showDivergenceLens = false,
+  onToggleDivergenceLens,
 }) => {
   const [isMuted, setIsMuted] = useState(soundManager.getMuted());
 
@@ -48,8 +76,105 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
   return (
     <header className="absolute top-0 inset-x-0 z-30 p-3 sm:p-4 pointer-events-none select-none font-sans">
       <div className="relative w-full h-full flex items-center justify-between">
-        {/* Empty left anchor so layout remains flexible */}
-        <div className="hidden lg:block w-12" />
+        {/* 1. LEFT CAPSULE: 3D Viewport Controls & Planet Dossier (Top-aligned with Center & Right) */}
+        <div className="pointer-events-auto flex items-center gap-1 sm:gap-1.5 bg-white/85 backdrop-blur-xl border border-white/90 rounded-2xl p-1.5 sm:p-2 shadow-xl shadow-slate-200/50">
+          {!isPlanetHudOpen && onTogglePlanetHud && (
+            <>
+              <button
+                onClick={() => {
+                  soundManager.playClick();
+                  onTogglePlanetHud();
+                }}
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-sky-50 text-slate-800 hover:text-[#0369A1] border border-slate-200/90 text-xs font-orbitron font-bold flex items-center gap-1.5 transition-all shadow-xs"
+                title="Open Planetary Dossier"
+              >
+                <Compass className="w-3.5 h-3.5 text-[#0369A1]" />
+                <span>{planetName || 'Planet'} Dossier</span>
+              </button>
+              <div className="w-px h-5 bg-slate-200 mx-0.5 hidden sm:block" />
+            </>
+          )}
+
+          {onZoomIn && (
+            <button
+              onClick={() => {
+                soundManager.playClick();
+                onZoomIn();
+              }}
+              className="p-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 hover:text-[#0369A1] hover:bg-sky-50 transition-all shadow-xs"
+              title="Zoom In"
+            >
+              <ZoomIn className="w-4 h-4" />
+            </button>
+          )}
+
+          {onZoomOut && (
+            <button
+              onClick={() => {
+                soundManager.playClick();
+                onZoomOut();
+              }}
+              className="p-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 hover:text-[#0369A1] hover:bg-sky-50 transition-all shadow-xs"
+              title="Zoom Out"
+            >
+              <ZoomOut className="w-4 h-4" />
+            </button>
+          )}
+
+          {onToggleAutoRotate && (
+            <button
+              onClick={() => {
+                soundManager.playClick();
+                onToggleAutoRotate();
+              }}
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                autoRotate
+                  ? 'bg-sky-50 text-[#0369A1] border border-sky-300 shadow-xs'
+                  : 'bg-slate-50 text-slate-600 border border-slate-200/80 hover:text-slate-900'
+              }`}
+              title="Toggle Planetary Orbit Animation"
+            >
+              <RotateCw className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Orbit: {autoRotate ? 'ON' : 'OFF'}</span>
+            </button>
+          )}
+
+          {onToggleGrid && (
+            <button
+              onClick={() => {
+                soundManager.playClick();
+                onToggleGrid();
+              }}
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                showGrid
+                  ? 'bg-sky-50 text-[#0369A1] border border-sky-300 shadow-xs'
+                  : 'bg-slate-50 text-slate-600 border border-slate-200/80 hover:text-slate-900'
+              }`}
+              title="Toggle Orbital Plane Coordinates"
+            >
+              <Grid className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Grid</span>
+            </button>
+          )}
+
+          {onToggleDivergenceLens && (
+            <button
+              onClick={() => {
+                soundManager.playClick();
+                onToggleDivergenceLens();
+              }}
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-orbitron font-bold transition-all ${
+                showDivergenceLens
+                  ? 'bg-emerald-50 text-[#15803D] border border-emerald-300 shadow-xs'
+                  : 'bg-slate-50 text-slate-600 border border-slate-200/80 hover:text-slate-900'
+              }`}
+              title="Toggle Dual-Pole Regional Divergence 3D Heatmap"
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline">Divergence: {showDivergenceLens ? 'ON' : 'OFF'}</span>
+            </button>
+          )}
+        </div>
 
         {/* Top-Center Brand & Planet Switcher (Repositioned to Top Center) */}
         <div className="pointer-events-auto mx-auto lg:absolute lg:left-1/2 lg:-translate-x-1/2 flex items-center gap-2.5 sm:gap-3 bg-white/85 backdrop-blur-xl border border-white/90 rounded-2xl px-3.5 sm:px-4 py-2 sm:py-2.5 shadow-xl shadow-slate-200/50">

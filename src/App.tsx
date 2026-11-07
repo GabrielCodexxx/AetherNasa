@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useRef, lazy, Suspense } from 'react';
 import { ThreeSpaceSystem } from './components/ThreeSpaceSystem';
 import { EarthSystemHeader } from './components/EarthSystemHeader';
 import { PlanetHUD } from './components/PlanetHUD';
@@ -41,6 +41,13 @@ export function App() {
   const [showPlanetology, setShowPlanetology] = useState<boolean>(false);
   const [showReportModal, setShowReportModal] = useState<boolean>(false);
   const [isPlanetHudOpen, setIsPlanetHudOpen] = useState<boolean>(false);
+
+  // 3D Viewport Controls (Shared with Header Left Capsule)
+  const [autoRotate, setAutoRotate] = useState<boolean>(true);
+  const [showGrid, setShowGrid] = useState<boolean>(true);
+  const [showDivergenceLens, setShowDivergenceLens] = useState<boolean>(false);
+  const zoomInRef = useRef<(() => void) | null>(null);
+  const zoomOutRef = useRef<(() => void) | null>(null);
 
   // Active planet & trend
   const currentPlanet =
@@ -114,13 +121,15 @@ export function App() {
           onSelectPlanet={handleSelectPlanet}
           onSelectHotspot={handleSelectHotspot}
           onSelectSatellite={() => setShowBriefing(true)}
-          onTogglePlanetHud={() => setIsPlanetHudOpen(!isPlanetHudOpen)}
-          isPlanetHudOpen={isPlanetHudOpen || isStructureMode}
-          planetName={currentPlanet.name}
+          autoRotate={autoRotate}
+          showGrid={showGrid}
+          showDivergenceLens={showDivergenceLens}
+          zoomInRef={zoomInRef}
+          zoomOutRef={zoomOutRef}
         />
       </div>
 
-      {/* 2. Next-Gen NASA Space Command Capsule Header (No dots) */}
+      {/* 2. Next-Gen NASA Space Command Capsule Header (Unified Tri-Capsule Alignment) */}
       <EarthSystemHeader
         viewMode={viewMode}
         selectedPlanetId={selectedPlanetId}
@@ -136,6 +145,18 @@ export function App() {
         onOpenScenarios={() => setShowScenarios(true)}
         onOpenPlanetology={() => setShowPlanetology(true)}
         onOpenReport={() => setShowReportModal(true)}
+        // Left 3D Viewport & Dossier Controls (Top-Aligned Tri-Capsule Header)
+        planetName={currentPlanet.name}
+        isPlanetHudOpen={isPlanetHudOpen || isStructureMode}
+        onTogglePlanetHud={() => setIsPlanetHudOpen(!isPlanetHudOpen)}
+        onZoomIn={() => zoomInRef.current?.()}
+        onZoomOut={() => zoomOutRef.current?.()}
+        autoRotate={autoRotate}
+        onToggleAutoRotate={() => setAutoRotate(!autoRotate)}
+        showGrid={showGrid}
+        onToggleGrid={() => setShowGrid(!showGrid)}
+        showDivergenceLens={showDivergenceLens}
+        onToggleDivergenceLens={() => setShowDivergenceLens(!showDivergenceLens)}
       />
 
       {/* 3. Left Planetary Intelligence & Structure Dossier (Appears upon clicking planet) */}
