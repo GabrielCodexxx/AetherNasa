@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import {
-  Globe,
   Search,
   BookOpen,
   Volume2,
   VolumeX,
   Database,
 } from 'lucide-react';
+import aetherLogo from '../assets/images/logo/AetherLogo.jpg';
 import { soundManager } from '../utils/soundEffects';
 import { SOLAR_PLANETS } from '../utils/earthSystemData';
 import type { SystemViewMode, PlanetData } from '../types/earthSystem';
@@ -47,8 +47,12 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
 
         {/* Top-Center Brand & Planet Switcher (Repositioned to Top Center) */}
         <div className="pointer-events-auto mx-auto lg:absolute lg:left-1/2 lg:-translate-x-1/2 flex items-center gap-2.5 sm:gap-3 bg-white/85 backdrop-blur-xl border border-white/90 rounded-2xl px-3.5 sm:px-4 py-2 sm:py-2.5 shadow-xl shadow-slate-200/50">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-[#0369A1] to-[#15803D] flex items-center justify-center shadow-md shadow-sky-900/15 shrink-0">
-            <Globe className="w-4 h-4 text-white" />
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-slate-200/90 overflow-hidden flex items-center justify-center shadow-md shadow-slate-900/10 shrink-0 p-1">
+            <img
+              src={aetherLogo}
+              alt="Planet Detective Insignia Logo"
+              className="w-full h-full object-contain"
+            />
           </div>
 
           <div>
