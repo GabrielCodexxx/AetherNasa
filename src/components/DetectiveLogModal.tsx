@@ -2,35 +2,37 @@ import React, { useState, useEffect } from 'react';
 import { X, Database, Send, Radio, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
 import { soundManager } from '../utils/soundEffects';
-import type { MoonquakeEvent } from '../types/moonquake';
+import type { EarthSystemTrend } from '../types/earthSystem';
 
-interface SeismicLogModalProps {
+interface DetectiveLogModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedEvent: MoonquakeEvent | null;
+  selectedTrend: EarthSystemTrend;
+  currentYear: number;
 }
 
-interface LogEntry {
+interface CaseLogEntry {
   id: string;
   callsign: string;
-  quake_name: string;
-  magnitude: number;
+  variable_name: string;
+  year: number;
+  significance_verdict: string;
   notes: string;
   created_at: string;
 }
 
-export const SeismicLogModal: React.FC<SeismicLogModalProps> = ({
+export const DetectiveLogModal: React.FC<DetectiveLogModalProps> = ({
   isOpen,
   onClose,
-  selectedEvent,
+  selectedTrend,
+  currentYear,
 }) => {
   const [callsign, setCallsign] = useState('');
   const [notes, setNotes] = useState('');
-  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [logs, setLogs] = useState<CaseLogEntry[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  // Load logs from Supabase or localStorage
   useEffect(() => {
     if (!isOpen) return;
 
@@ -38,7 +40,7 @@ export const SeismicLogModal: React.FC<SeismicLogModalProps> = ({
       if (supabase && isSupabaseConfigured) {
         try {
           const { data, error } = await supabase
-            .from('seismic_observations')
+            .from('earth_trend_investigations')
             .select('*')
             .order('created_at', { ascending: false })
             .limit(10);
@@ -48,33 +50,35 @@ export const SeismicLogModal: React.FC<SeismicLogModalProps> = ({
             return;
           }
         } catch {
-          // Fall through to local fallback
+          // Local fallback
         }
       }
 
-      // Local fallback
+      // Local storage fallback
       try {
-        const stored = localStorage.getItem('lunar_seismic_logs');
+        const stored = localStorage.getItem('earth_trend_detective_logs');
         if (stored) {
           setLogs(JSON.parse(stored));
         } else {
-          // Default historical log entries
-          const defaults: LogEntry[] = [
+          // Default initial detective logs
+          const defaults: CaseLogEntry[] = [
             {
               id: 'log-1',
-              callsign: 'CDR-Young (Apollo 16)',
-              quake_name: 'The Great Lunar Quake of 1972',
-              magnitude: 5.5,
-              notes: 'Descartes station detected sustained 14.5m shaking. Structural ringing observed across passive array.',
-              created_at: '1972-03-13T16:15:00Z',
+              callsign: 'Lead Detective - NASA Goddard',
+              variable_name: 'Arctic Sea Ice Minimum Extent',
+              year: 2026,
+              significance_verdict: '99.9% Significant (p < 0.0001)',
+              notes: 'Confirmed 45% loss since 1980. Regional divergence confirmed: Arctic warming 4x faster than lower latitudes.',
+              created_at: new Date().toISOString(),
             },
             {
               id: 'log-2',
-              callsign: 'Artemis-Geodesy-01',
-              quake_name: 'Mare Crisium Thrust Quake',
-              magnitude: 5.1,
-              notes: 'Confirmed thrust fault slip. High Q-factor verified with zero fluid damping in megaregolith.',
-              created_at: new Date().toISOString(),
+              callsign: 'Dr. Altimetry - JPL',
+              variable_name: 'Global Mean Sea Level Rise',
+              year: 2024,
+              significance_verdict: 'Significant (Mann-Kendall Tau = 0.94)',
+              notes: 'Sentinel-6 altimetry confirms acceleration to 4.2 mm/year. Thermal expansion + Greenland melt verified.',
+              created_at: '2024-10-12T14:20:00Z',
             },
           ];
           setLogs(defaults);
@@ -89,34 +93,33 @@ export const SeismicLogModal: React.FC<SeismicLogModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!callsign.trim() || !selectedEvent) return;
+    if (!callsign.trim() || !selectedTrend) return;
 
     setIsSubmitting(true);
     soundManager.playClick();
 
-    const newLog: LogEntry = {
-      id: `log-${Date.now()}`,
+    const newEntry: CaseLogEntry = {
+      id: `case-${Date.now()}`,
       callsign: callsign.trim(),
-      quake_name: selectedEvent.name,
-      magnitude: selectedEvent.magnitude,
-      notes: notes.trim() || `Recorded ${selectedEvent.category} event via 3D globe inspection.`,
+      variable_name: selectedTrend.name,
+      year: currentYear,
+      significance_verdict: selectedTrend.significance,
+      notes: notes.trim() || `Verified ${selectedTrend.ratePerDecade} trend across satellite time-series.`,
       created_at: new Date().toISOString(),
     };
 
-    // Try Supabase insert
     if (supabase && isSupabaseConfigured) {
       try {
-        await supabase.from('seismic_observations').insert([newLog]);
+        await supabase.from('earth_trend_investigations').insert([newEntry]);
       } catch (err) {
-        console.warn('Supabase log insert fallback to local:', err);
+        console.warn('Supabase insert fallback:', err);
       }
     }
 
-    // Always update local state & localStorage
-    const updated = [newLog, ...logs];
+    const updated = [newEntry, ...logs];
     setLogs(updated);
     try {
-      localStorage.setItem('lunar_seismic_logs', JSON.stringify(updated));
+      localStorage.setItem('earth_trend_detective_logs', JSON.stringify(updated));
     } catch {
       // Ignored
     }
@@ -124,6 +127,7 @@ export const SeismicLogModal: React.FC<SeismicLogModalProps> = ({
     setIsSubmitting(false);
     setSubmitSuccess(true);
     setNotes('');
+    soundManager.playSignificanceAlert();
     setTimeout(() => setSubmitSuccess(false), 3000);
   };
 
@@ -140,11 +144,19 @@ export const SeismicLogModal: React.FC<SeismicLogModalProps> = ({
             </div>
             <div>
               <h2 className="text-xl font-bold font-mono text-white flex items-center gap-2">
-                SEISMIC OBSERVATION LOGBOOK
+                TREND DETECTIVE CASE LOGBOOK
               </h2>
               <p className="text-xs text-slate-400 font-mono flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${isSupabaseConfigured ? 'bg-emerald-400 shadow-sm shadow-emerald-400' : 'bg-amber-400'}`}></span>
-                {isSupabaseConfigured ? 'Connected to Supabase Cloud Database' : 'Local Storage Mode'}
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    isSupabaseConfigured
+                      ? 'bg-emerald-400 shadow-sm shadow-emerald-400'
+                      : 'bg-amber-400'
+                  }`}
+                ></span>
+                {isSupabaseConfigured
+                  ? 'Connected to Supabase Cloud Database'
+                  : 'Local Storage Mode'}
               </p>
             </div>
           </div>
@@ -159,18 +171,18 @@ export const SeismicLogModal: React.FC<SeismicLogModalProps> = ({
           </button>
         </div>
 
-        {/* Form to submit observation */}
+        {/* Log Submission Form */}
         <div className="p-6 border-b border-slate-800 bg-slate-950/40">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <label className="block text-xs font-mono text-slate-400 mb-1">
-                  Explorer Callsign / Name
+                  Detective Callsign / Name
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Commander Shepard"
+                  placeholder="e.g. Officer Holmes (Goddard)"
                   value={callsign}
                   onChange={(e) => setCallsign(e.target.value)}
                   className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono"
@@ -179,55 +191,55 @@ export const SeismicLogModal: React.FC<SeismicLogModalProps> = ({
 
               <div className="flex-1">
                 <label className="block text-xs font-mono text-slate-400 mb-1">
-                  Target Event
+                  Target Earth Science Variable
                 </label>
                 <div className="px-3.5 py-2 rounded-xl bg-slate-800/80 border border-slate-700 text-sm font-mono text-cyan-300 truncate">
-                  {selectedEvent ? `${selectedEvent.name} (M ${selectedEvent.magnitude})` : 'Select an event on the globe'}
+                  {selectedTrend.name} ({currentYear})
                 </div>
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-mono text-slate-400 mb-1">
-                Field Observation Notes
+                Detective Investigation Findings & Regional Divergence Notes
               </label>
               <textarea
                 rows={2}
-                placeholder="Log your seismic analysis, wave velocity observations, or Artemis habitat risk notes..."
+                placeholder="Log your evidence on what is changing, where it is changing, and statistical significance..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-sans"
               />
             </div>
 
             <div className="flex items-center justify-between">
               {submitSuccess ? (
                 <span className="text-xs font-mono text-emerald-400 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4" /> Observation logged successfully!
+                  <CheckCircle2 className="w-4 h-4" /> Investigation Case Filed Successfully!
                 </span>
               ) : (
                 <span className="text-xs font-mono text-slate-500">
-                  Logs are persisted to cloud telemetry
+                  Case telemetry is permanently logged
                 </span>
               )}
 
               <button
                 type="submit"
-                disabled={isSubmitting || !callsign.trim() || !selectedEvent}
+                disabled={isSubmitting || !callsign.trim()}
                 className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-mono font-bold text-xs flex items-center gap-2 transition-all shadow-md shadow-emerald-600/20"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>{isSubmitting ? 'Transmitting...' : 'Log Observation'}</span>
+                <span>{isSubmitting ? 'Transmitting...' : 'File Detective Case'}</span>
               </button>
             </div>
           </form>
         </div>
 
-        {/* Existing Log Entries */}
+        {/* Case History */}
         <div className="p-6 overflow-y-auto flex-1 space-y-3">
           <h3 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
             <Radio className="w-3.5 h-3.5 text-cyan-400" />
-            Recent Telemetry Observations ({logs.length})
+            Filed Earth System Investigations ({logs.length})
           </h3>
 
           <div className="space-y-2.5">
@@ -245,12 +257,14 @@ export const SeismicLogModal: React.FC<SeismicLogModalProps> = ({
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-xs font-mono">
-                  <span className="text-cyan-400 font-bold">{log.quake_name}</span>
+                  <span className="text-cyan-400 font-bold">{log.variable_name}</span>
                   <span className="text-slate-500">•</span>
-                  <span className="text-amber-400 font-bold">M {log.magnitude}</span>
+                  <span className="text-amber-400">Year {log.year}</span>
+                  <span className="text-slate-500">•</span>
+                  <span className="text-emerald-400">{log.significance_verdict}</span>
                 </div>
                 {log.notes && (
-                  <p className="text-xs text-slate-300 italic bg-slate-900/50 p-2 rounded-xl border border-slate-800/60">
+                  <p className="text-xs text-slate-300 italic bg-slate-900/50 p-2 rounded-xl border border-slate-800/60 font-sans">
                     "{log.notes}"
                   </p>
                 )}
@@ -279,4 +293,4 @@ export const SeismicLogModal: React.FC<SeismicLogModalProps> = ({
     </div>
   );
 };
-export default SeismicLogModal;
+export default DetectiveLogModal;

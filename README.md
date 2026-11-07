@@ -1,96 +1,85 @@
-# MOONQUAKE MAP 2.0 🌕
-**NASA Space Apps Challenge 2026** | *Challenge: Make a Moonquake Map 2.0*  
-**Interactive 3D Lunar Seismic Telemetry & Planetary Exploration Platform**  
+# EARTH SYSTEM TREND DETECTIVE 🌍🔭
+**2026 NASA Space Apps Challenge** | *Challenge: Be An Earth System Trend Detective!*  
+**Interactive 3D Solar System Scope, Planetary Observatory & Earth System Science Platform**  
 **Database:** Supabase (PostgreSQL) | **Deployment:** Vercel Edge | **Graphics:** Three.js / WebGL
 
 ---
 
-## 🌟 Overview & Scientific Motivation
+## 🌟 Challenge Mission & Scientific Objective
 
-Between 1969 and 1972, Apollo astronauts hand-deployed the **Apollo Passive Seismic Experiment Package (APSE)** across the lunar nearside (Apollo 12, 14, 15, and 16). For 8 continuous years until 1977, these instruments recorded over 12,000 seismic events—the only direct seismic observations ever gathered from another planetary body.
+> *"Change is always occurring in the Earth’s interconnected environmental system, and when it runs in a consistent direction – rising or falling, increasing or decreasing, thickening or thinning – measured variables reflect it. But a measured Earth science data variable can trend one way in one region and the opposite way in another, even when the same process drives both. The multitude of Earth science data variables makes it difficult to select variables that could indicate change, and to then perform an analysis on the selected variables. Your challenge is to create a tool that can select variables measured by Earth science missions or produced by Earth science models, visualize how they change over time, and determine what is changing, where it is changing, how much it is changing, and if these changes are what scientists call 'significant.'"*
 
-Unlike Earth quakes, which extinguish in 30–60 seconds due to water damping in rock pores, the Moon is bone-dry and fractured by billions of years of impacts. Without water absorption, seismic energy scatters endlessly, causing the Moon to **"ring like a bell"** for 10 to 30+ minutes (and over 3 hours for artificial rocket booster crashes!).
-
-**Moonquake Map 2.0** brings this historic NASA dataset to life with:
-1. **Interactive 3D Lunar Globe (Three.js)** with accurate lunar coordinates, Apollo station beacons, color-coded epicenters, and animated propagating seismic wavefronts.
-2. **The 4 Primary Moonquake Classes**: Shallow tectonic thrusts, deep tidal mantle clusters, thermal day/night shocks, and artificial rocket calibration impacts.
-3. **Procedural Web Audio Seismic Sonifier**: Real-time acoustic synthesis translating deep lunar crustal vibrations into audible human sound.
-4. **Live Seismograph Waveform Display**: Continuous trace analysis comparing Earth vs. Moon seismic attenuation.
-5. **Artemis Base Camp Science Briefing**: Engineering hazard analysis for permanent human habitats near South Pole active lobate scarps.
-6. **Cloud Telemetry Logbook**: Persisted observations powered by **Supabase**.
+**Earth System Trend Detective** solves this challenge by pairing an immersive **Solar System Scope 3D space engine** with a forensic Earth science analytics workbench answering the 4 core investigative questions for every variable:
+1. **WHAT is changing?** (The measured satellite variable, baseline, and physical unit)
+2. **WHERE is it changing?** (3D geographic hotspots and regional divergence analysis)
+3. **HOW MUCH is it changing?** (Decadal rate of change and cumulative anomaly)
+4. **IS IT WHAT SCIENTISTS CALL "SIGNIFICANT"?** (Mann-Kendall trend tests and statistical $p$-values $< 0.001$, proving non-random change)
 
 ---
 
 ## 🚀 Key Features
 
-### 1. Full-Screen 3D Planetarium & Globe (`ThreeMoonGlobe.tsx`)
-- **Immersive Full-Screen Universe**: Edge-to-edge 3D space viewport featuring a 2,500-star multi-temperature celestial field, distant Earthrise halo, and celestial equator & meridian coordinate grid.
-- **Photorealistic Lunar Topography**: Procedural 2048x1024 diffuse and bump-mapped terrain rendering basaltic maria (*Oceanus Procellarum, Mare Crisium*), cratered highlands (*Descartes*), and bright ray ejecta radiating from *Copernicus* and *Tycho*.
-- **Atmospheric Limb Glow**: Custom Fresnel / Rayleigh scattering rim glow shader.
-- **3D Structure Cutaway Mode**: Interactive concentric cross-section revealing the Moon's interior layers:
-  - *Brittle Crust* (0–60 km)
-  - *Rigid Lithospheric Mantle* (60–1000 km) with deep moonquake foci plotted at their true 800 km depth!
-  - *Asthenosphere / Partial Melt* (1000–1400 km)
-  - *Metallic Solid Iron Core* (center glowing sphere)
-- **Apollo Station Towers**: 3D holographic laser beacons marking Apollo 12, 14, 15, and 16 surface seismometers.
-- **Animated Shockwave Wavefronts**: Dynamic concentric pulsating rings radiating across the lunar surface from epicenters.
+### 1. Full-Screen 3D Cosmos & Solar System Engine (`ThreeSpaceSystem.tsx`)
+- **Central Radiant Sun**: Emissive solar body with animated corona shader, solar light casting, and lens flare.
+- **Planetary Orbits**: Mercury, Venus, Earth with its Moon, Mars, Jupiter with atmospheric cloud bands, Saturn with particle rings, Uranus, and Neptune.
+- **The Asteroid Belt**: 2,000 instanced 3D rocky asteroid particles orbiting between Mars and Jupiter.
+- **Deep Space Universe**: Spiraling Milky Way galaxy dust band and a 3,500-star multi-spectral celestial sphere.
+- **Ecliptic Coordinate Grid**: Toggleable polar orbital plane coordinate grid.
 
-### 2. Chronological Timeline Scrubber (`TimelineScrubber.tsx`)
-- Interactive playback bar spanning the entire Apollo Passive Seismic era (1969 to 1977).
-- Play / Pause with speed multipliers (1x, 2x, 5x) to watch moonquakes trigger chronologically with sound effects.
-- Direct slider scrubber and historical jump controls.
+### 2. Earth System Trend Detective Mode
+- **Procedural 3D Earth**: Landmasses, oceans, swirling atmospheric cloud layer, and Rayleigh scattering blue rim glow.
+- **Dynamic Polar Ice Caps**: Arctic sea ice and Antarctic ice sheets that physically shrink/expand on the 3D globe as the user scrubs through time from **1980 to 2026**!
+- **Regional Hotspot Pins**: Interactive 3D pins marking critical observation zones:
+  - *Arctic Ocean*: Sea ice collapse & albedo feedback ($-12.6\%$ / decade).
+  - *Greenland Ice Sheet*: $-270\text{ Billion Tons}$ mass loss per year via GRACE-FO gravimeters.
+  - *Amazon Basin*: Severe canopy drought and carbon sink-to-source transition.
+  - *Great Barrier Reef*: Thermal marine heatwaves and mass coral bleaching.
+  - *Thwaites Glacier*: Grounding line retreat into deep Antarctic marine basins.
+  - *Sahel-Sahara Corridor*: Hydroclimatic volatility and shifting rainfall belts.
 
-### 3. Interactive Scenario Walkthrough (`ScenarioWalkthrough.tsx`)
-- Step-by-step educational guide explaining lunar seismology:
-  1. *The Great Lunar Quake of 1972* ($M_L 5.5$ global crust shrinkage)
-  2. *The Apollo 13 Rocket Crash* (NASA 14-ton S-IVB calibration collision, 3.3-hour ringing)
-  3. *Deep Tidal Stresses* (Earth's gravity stretching the mantle at 800 km depth)
-  4. *Artemis Base Camp Seismic Hazard* (Active lobate scarps near South Pole Shackleton Crater)
-- Auto-focus camera flies to each location, activates the 3D cutaway or surface view, and triggers acoustic sonification!
+### 3. Regional Trend Divergence Engine
+Addresses the critical challenge criterion: *"a variable can trend one way in one region and the opposite in another, even when the same process drives both."*
+- **Arctic Greening vs. Amazon Drying**: Atmospheric warming causes high-latitude Arctic tundra to green (shrub encroachment), while simultaneously accelerating canopy moisture loss and mega-fires in the tropical Amazon.
+- **Sea Level Rise vs. Glacial Rebound**: Tropical Pacific islands experience accelerating inundation ($+4.2\text{ mm/yr}$), while parts of Alaska and Scandinavia measure falling relative sea level due to post-glacial land uplift.
 
-### 2. Live Seismograph & Sonification (`SeismographVisualizer.tsx`)
-- **Animated Canvas Seismogram**: Real-time rendering of authentic Apollo decaying waveform traces.
-- **Physical Readouts**: Peak Ground Acceleration ($\mu\text{m/s}^2$), focal depth, magnitude, and signal duration.
-- **Web Audio Seismic Sonifier**: Procedural synthesis converting Richter magnitude and event physics into acoustic sound:
-  - *Shallow quakes*: Deep, sub-bass 40–80 Hz saw-wave tectonic rumble.
-  - *Apollo Booster Impacts*: High-frequency 320 Hz metallic reverberation.
-  - *Deep Tidal quakes*: Low 60 Hz sinusoidal mantle hum.
+### 4. 3D Earth Interior Structure Cutaway (`[STRUCTURE]` View)
+- Explores Earth's internal layers in a 3/4 cutaway cross-section:
+  - **Crust** ($0\text{--}35\text{ km}$)
+  - **Mantle** ($35\text{--}2,890\text{ km}$)
+  - **Outer Core** ($2,890\text{--}5,150\text{ km}$, liquid iron-nickel convective dynamo generating Earth's protective magnetic shield)
+  - **Inner Core** ($5,150\text{--}6,370\text{ km}$, solid crystal iron sphere)
 
-### 3. Multi-Parameter Filtering (`MoonquakeFilterBar.tsx`)
-- Category pill filters: All, Shallow (Tectonic), Deep (Tidal), Apollo Impacts, Thermal.
-- Magnitude slider: Filter events from $M_L \ge 1.0$ up to $M_L \ge 5.5$.
-- Instant text search across event titles, geological formations, and science notes.
-- Horizontal scrollable quick-selection cards.
+### 5. Interactive Detective Case Files (`DetectiveScenariosModal.tsx`)
+Four guided forensic investigations answering the 4 NASA challenge questions:
+- **Case 01: The Vanishing Arctic Mirror** (Cryosphere & Albedo Feedback)
+- **Case 02: The 1.5°C Planetary Thermometer** (Atmospheric Temperature Anomaly)
+- **Case 03: The Rising Ocean Shoreline** (Satellite Altimetry & Ice Melt)
+- **Case 04: The Amazon Rain-Pump Under Siege** (Tropical Canopy Degradation)
 
-### 4. Artemis Science Briefing (`ArtemisScienceModal.tsx`)
-- **Why the Moon Rings Like a Bell**: Contrast between Earth's wet absorption ($Q \approx 100$) and the Moon's dry scattering megaregolith ($Q > 3,000$).
-- **The 4 Moonquake Classes**: Geological mechanics behind each class.
-- **Apollo Seismic Network History**: Details on the SNAP-27 RTG nuclear power and 1977 shutdown.
-- **Artemis South Pole Hazards**: Structural fatigue and regolith landslide risks for Shackleton Crater habitats near active lobate scarps (Watters et al., 2024).
+### 6. Timeline Scrubber (1980 to 2026) (`EarthTimelineScrubber.tsx`)
+- Animated chronological playback with $1\times$, $2\times$, and $5\times$ speeds.
+- Interactive slider updating Earth's 3D polar ice coverage, temperature metrics, and time-series graphs in real-time.
+- Category filters: *Temperature, Cryosphere, Hydrosphere, Atmosphere, Biosphere*.
 
-### 5. Persistent Observation Logbook (`SeismicLogModal.tsx`)
-- Field observations recorded by astronauts and researchers.
-- Seamlessly synced with **Supabase Cloud Database** (`seismic_observations`), with automatic offline local storage fallback.
+### 7. NASA Earth Science Fleet & Statistical Manual (`EarthScienceModal.tsx`)
+- Detailed specifications for flagship NASA Earth observation satellites: **Terra, Aqua, GRACE-FO, ICESat-2, Landsat 9, Sentinel-6 Michael Freilich, and SWOT**.
+- Deep dive into Mann-Kendall trend tests, $p$-value significance thresholds, and signal-to-noise separation.
 
----
-
-## 📐 The Physics: Earth vs. Moon Seismic Attenuation
-
-$$\text{Lunar Attenuation Quality Factor } Q \approx 3,000 - 5,000 \quad \text{vs.} \quad \text{Earth Crust } Q \approx 100 - 300$$
-
-Due to the total lack of water and volatile fluid damping in the lunar megaregolith, seismic waves experience near-zero frictional dissipation. Scattering from ancient impact fractures traps acoustic waves, causing the Moon to vibrate as a single resonant bell.
+### 8. Cloud Telemetry Case Logbook (`DetectiveLogModal.tsx`)
+- Allows detectives and researchers to file investigation findings.
+- Synced directly to **Supabase Cloud Database** (`earth_trend_investigations`), with automatic offline local storage fallback.
 
 ---
 
 ## 🛠️ Architecture & Tech Stack
 
-- **Frontend Framework**: React 19, TypeScript
-- **3D Graphics Engine**: Three.js (WebGL)
+- **Frontend**: React 19, TypeScript
+- **3D Graphics Engine**: Three.js (WebGL, procedural bump mapping, custom Fresnel Rayleigh atmospheric shaders, instanced asteroid particle system)
 - **Styling**: Tailwind CSS v4, Lucide Icons
-- **Audio Synthesis**: Native Web Audio API (procedural oscillators and gain envelopes)
+- **Audio Synthesis**: Native Web Audio API (procedural oscillators, frequency modulation for temperature and ice melt signals)
 - **Database**: Supabase (PostgreSQL)
 - **Hosting**: Vercel Edge Platform
-- **Code-Splitting**: Manual Rollup chunking (`vendor-three`, `vendor-react`, `vendor-supabase`, `vendor-icons`) and lazy-loaded modals via `React.Suspense`.
+- **Code-Splitting**: Modular Rollup chunks (`vendor-three`, `vendor-react`, `vendor-supabase`, `vendor-icons`) and lazy-loaded modals via `React.Suspense`.
 
 ---
 
@@ -113,7 +102,7 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```bash
 npm run dev
 ```
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+Open **`http://localhost:5173`** in your browser.
 
 ### 4. Build for Production
 ```bash
@@ -122,9 +111,11 @@ npm run build
 
 ---
 
-## 📜 Scientific References & Acknowledgments
+## 📜 Scientific Data Sources & Citations
 
-- **Apollo Passive Seismic Experiment (APSE)**: NASA Planetary Data System (PDS) Geosciences Node.
-- **Nakamura, Y., et al. (1979)**: *High-frequency lunar seismic events*. Physics of the Earth and Planetary Interiors.
-- **Watters, T. R., et al. (2024)**: *Tectonics and Seismicity of the Lunar South Polar Region*. The Planetary Science Journal.
-- **Latham, G., et al. (1970)**: *Apollo 11 Passive Seismic Experiment*. Science.
+- **NASA GISTEMP v4**: Surface Temperature Analysis (Goddard Institute for Space Studies).
+- **NASA NSIDC**: Sea Ice Index & Satellite Microwave Altimetry.
+- **NASA/CNES Ocean Surface Topography**: TOPEX/Poseidon, Jason-1/2/3, and Sentinel-6 Michael Freilich.
+- **NASA/GFZ GRACE & GRACE-FO**: Tellus Land Ice Mass Anomaly.
+- **NASA Terra & Aqua MODIS / USGS Landsat**: Normalized Difference Vegetation Index (NDVI).
+- **NOAA GML / NASA OCO-2**: Atmospheric Carbon Dioxide ($\text{CO}_2$) Keeling Curve.
