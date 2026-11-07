@@ -423,6 +423,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
     } else if (viewMode === 'planet_focus' || viewMode === 'earth_focus') {
       triggerFlyTo(targetPos, planetData.radius * 3.4 + 4, Math.PI / 2.5);
     } else if (viewMode === 'structure') {
+      orbitStateRef.current.theta = 0.35;
       triggerFlyTo(targetPos, planetData.radius * 3.8 + 5, Math.PI / 2.3);
     } else if (viewMode === 'night_sky') {
       triggerFlyTo(targetPos, planetData.radius * 1.5, Math.PI * 0.15); // Look up into deep space!

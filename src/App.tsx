@@ -147,7 +147,7 @@ export function App() {
         onOpenReport={() => setShowReportModal(true)}
         // Left 3D Viewport & Dossier Controls (Top-Aligned Tri-Capsule Header)
         planetName={currentPlanet.name}
-        isPlanetHudOpen={isPlanetHudOpen || isStructureMode}
+        isPlanetHudOpen={isPlanetHudOpen}
         onTogglePlanetHud={() => setIsPlanetHudOpen(!isPlanetHudOpen)}
         onZoomIn={() => zoomInRef.current?.()}
         onZoomOut={() => zoomOutRef.current?.()}
@@ -163,8 +163,13 @@ export function App() {
       <PlanetHUD
         planet={currentPlanet}
         viewMode={viewMode}
-        isOpen={isPlanetHudOpen || isStructureMode}
-        onClose={() => setIsPlanetHudOpen(false)}
+        isOpen={isPlanetHudOpen}
+        onClose={() => {
+          setIsPlanetHudOpen(false);
+          if (viewMode === 'structure') {
+            setViewMode(selectedPlanetId === 'earth' ? 'earth_focus' : 'planet_focus');
+          }
+        }}
         onChangeViewMode={(mode) => {
           setViewMode(mode);
           if (mode === 'solar_system') {
