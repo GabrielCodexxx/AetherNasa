@@ -172,7 +172,7 @@ export const SOLAR_PLANETS: PlanetData[] = [
     atmosphere: '78% Nitrogen, 21% Oxygen, 0.9% Argon',
     layers: [
       {
-        name: 'CRUST',
+        name: 'CRUST & LITHOSPHERE',
         subtitle: 'SOLID SILICATE ROCK, MOSTLY BASALT',
         description: 'Earth’s crust, together with the uppermost mantle, forms the lithosphere. Broken into tectonic plates that float on the upper mantle.',
         composition: 'Oceanic Basalt & Continental Granite',

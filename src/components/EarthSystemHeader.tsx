@@ -74,10 +74,10 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
   };
 
   return (
-    <header className="absolute top-0 inset-x-0 z-30 p-3 sm:p-4 pointer-events-none select-none font-sans">
-      <div className="relative w-full h-full flex items-center justify-between">
-        {/* 1. LEFT CAPSULE: 3D Viewport Controls & Planet Dossier (Top-aligned with Center & Right) */}
-        <div className="pointer-events-auto flex items-center gap-1 sm:gap-1.5 bg-white/85 backdrop-blur-xl border border-white/90 rounded-2xl p-1.5 sm:p-2 shadow-xl shadow-slate-200/50">
+    <header className="absolute top-0 inset-x-0 z-30 p-2.5 sm:p-4 pointer-events-none select-none font-sans">
+      <div className="w-full flex items-center justify-between gap-2 sm:gap-4">
+        {/* 1. LEFT CAPSULE: 3D Viewport Controls & Planet Dossier */}
+        <div className="pointer-events-auto shrink-0 flex items-center gap-1 sm:gap-1.5 bg-white/85 backdrop-blur-xl border border-white/90 rounded-2xl p-1.5 sm:p-2 shadow-xl shadow-slate-200/50">
           {!isPlanetHudOpen && onTogglePlanetHud && (
             <>
               <button
@@ -89,7 +89,8 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
                 title="Open Planetary Dossier"
               >
                 <Compass className="w-3.5 h-3.5 text-[#0369A1]" />
-                <span>{planetName || 'Planet'} Dossier</span>
+                <span className="hidden xl:inline">{planetName || 'Planet'} </span>
+                <span>Dossier</span>
               </button>
               <div className="w-px h-5 bg-slate-200 mx-0.5 hidden sm:block" />
             </>
@@ -135,7 +136,8 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
               title="Toggle Planetary Orbit Animation"
             >
               <RotateCw className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Orbit: {autoRotate ? 'ON' : 'OFF'}</span>
+              <span className="hidden lg:inline">Orbit: </span>
+              <span>{autoRotate ? 'ON' : 'OFF'}</span>
             </button>
           )}
 
@@ -171,97 +173,100 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
               title="Toggle Dual-Pole Regional Divergence 3D Heatmap"
             >
               <Layers className="w-3.5 h-3.5" />
-              <span className="hidden lg:inline">Divergence: {showDivergenceLens ? 'ON' : 'OFF'}</span>
+              <span className="hidden xl:inline">Divergence: </span>
+              <span className="hidden sm:inline">Lens</span>
             </button>
           )}
         </div>
 
-        {/* Top-Center Brand & Planet Switcher (Repositioned to Top Center) */}
-        <div className="pointer-events-auto mx-auto lg:absolute lg:left-1/2 lg:-translate-x-1/2 flex items-center gap-2.5 sm:gap-3 bg-white/85 backdrop-blur-xl border border-white/90 rounded-2xl px-3.5 sm:px-4 py-2 sm:py-2.5 shadow-xl shadow-slate-200/50">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-slate-200/90 overflow-hidden flex items-center justify-center shadow-md shadow-slate-900/10 shrink-0 p-1">
-            <img
-              src={aetherLogo}
-              alt="Planet Detective Insignia Logo"
-              className="w-full h-full object-contain"
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-xs sm:text-sm font-orbitron font-extrabold tracking-wider text-slate-900">
-                PLANET DETECTIVE
-              </h1>
-              <span className="px-1.5 py-0.5 rounded-md text-[8px] sm:text-[9px] font-orbitron font-bold bg-emerald-50 text-[#15803D] border border-emerald-200/80 uppercase">
-                NASA 2026
-              </span>
+        {/* 2. CENTER CAPSULE: Brand & Planet Switcher (Centered in Flex Space - Never Overlaps) */}
+        <div className="flex-1 flex justify-center min-w-0">
+          <div className="pointer-events-auto flex items-center gap-2 sm:gap-2.5 bg-white/85 backdrop-blur-xl border border-white/90 rounded-2xl px-3 sm:px-3.5 py-1.5 sm:py-2 shadow-xl shadow-slate-200/50">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white border border-slate-200/90 overflow-hidden flex items-center justify-center shadow-xs shrink-0 p-1">
+              <img
+                src={aetherLogo}
+                alt="Planet Detective Insignia Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
-            <p className="text-[10px] font-space text-slate-500 font-medium hidden sm:block">
-              Planetary System Trend Detective • Eco-Tracker
-            </p>
-          </div>
 
-          {/* Planet Switcher Quick Dropdown */}
-          <div className="pl-2 border-l border-slate-200">
-            <select
-              value={selectedPlanetId}
-              onChange={(e) => {
-                const p = SOLAR_PLANETS.find((item) => item.id === e.target.value);
-                if (p) {
-                  soundManager.playClick();
-                  onSelectPlanet(p);
-                }
-              }}
-              className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-orbitron font-bold text-[#0369A1] focus:outline-none focus:border-[#0369A1] cursor-pointer hover:bg-sky-50/50 transition-colors"
-            >
-              {SOLAR_PLANETS.map((planet) => (
-                <option key={planet.id} value={planet.id}>
-                  {planet.id === 'sun'
-                    ? '☀️ Sun'
-                    : planet.id === 'earth'
-                    ? '🌍 Earth'
-                    : planet.id === 'mars'
-                    ? '🔴 Mars'
-                    : planet.id === 'jupiter'
-                    ? '🪐 Jupiter'
-                    : planet.id === 'saturn'
-                    ? '🪐 Saturn'
-                    : planet.name}
-                </option>
-              ))}
-            </select>
-          </div>
+            <div className="shrink-0">
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-xs sm:text-sm font-orbitron font-extrabold tracking-wider text-slate-900 whitespace-nowrap">
+                  PLANET DETECTIVE
+                </h1>
+                <span className="px-1.5 py-0.5 rounded-md text-[8px] sm:text-[9px] font-orbitron font-bold bg-emerald-50 text-[#15803D] border border-emerald-200/80 uppercase">
+                  NASA 2026
+                </span>
+              </div>
+              <p className="text-[10px] font-space text-slate-500 font-medium hidden 2xl:block">
+                Planetary System Trend Detective • Eco-Tracker
+              </p>
+            </div>
 
-          {/* Case Files Forensic Button */}
-          <button
-            onClick={() => {
-              soundManager.playClick();
-              onOpenScenarios();
-            }}
-            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-orbitron font-bold uppercase bg-slate-50 hover:bg-sky-50 text-slate-700 hover:text-[#0369A1] border border-slate-200 hover:border-sky-300 transition-all shadow-xs"
-            title="Investigate Forensic Divergence Scenarios"
-          >
-            <Search className="w-3.5 h-3.5 text-[#0369A1]" />
-            <span>Case Files</span>
-          </button>
+            {/* Planet Switcher Quick Dropdown */}
+            <div className="pl-1.5 sm:pl-2 border-l border-slate-200 shrink-0">
+              <select
+                value={selectedPlanetId}
+                onChange={(e) => {
+                  const p = SOLAR_PLANETS.find((item) => item.id === e.target.value);
+                  if (p) {
+                    soundManager.playClick();
+                    onSelectPlanet(p);
+                  }
+                }}
+                className="px-2 sm:px-2.5 py-1 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-orbitron font-bold text-[#0369A1] focus:outline-none focus:border-[#0369A1] cursor-pointer hover:bg-sky-50/50 transition-colors"
+              >
+                {SOLAR_PLANETS.map((planet) => (
+                  <option key={planet.id} value={planet.id}>
+                    {planet.id === 'sun'
+                      ? '☀️ Sun'
+                      : planet.id === 'earth'
+                      ? '🌍 Earth'
+                      : planet.id === 'mars'
+                      ? '🔴 Mars'
+                      : planet.id === 'jupiter'
+                      ? '🪐 Jupiter'
+                      : planet.id === 'saturn'
+                      ? '🪐 Saturn'
+                      : planet.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          {/* Feature 5: Comparative Planetology Lab */}
-          {onOpenPlanetology && (
+            {/* Case Files Forensic Button */}
             <button
               onClick={() => {
                 soundManager.playClick();
-                onOpenPlanetology();
+                onOpenScenarios();
               }}
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-orbitron font-bold uppercase bg-slate-50 hover:bg-amber-50 text-slate-700 hover:text-amber-800 border border-slate-200 hover:border-amber-300 transition-all shadow-xs"
-              title="Compare Earth vs Venus vs Mars"
+              className="hidden lg:flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-xl text-xs font-orbitron font-bold uppercase bg-slate-50 hover:bg-sky-50 text-slate-700 hover:text-[#0369A1] border border-slate-200 hover:border-sky-300 transition-all shadow-xs shrink-0"
+              title="Investigate Forensic Divergence Scenarios"
             >
-              <Compass className="w-3.5 h-3.5 text-amber-600" />
-              <span>Planetology</span>
+              <Search className="w-3.5 h-3.5 text-[#0369A1]" />
+              <span>Case Files</span>
             </button>
-          )}
+
+            {/* Feature 5: Comparative Planetology Lab */}
+            {onOpenPlanetology && (
+              <button
+                onClick={() => {
+                  soundManager.playClick();
+                  onOpenPlanetology();
+                }}
+                className="hidden xl:flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-xl text-xs font-orbitron font-bold uppercase bg-slate-50 hover:bg-amber-50 text-slate-700 hover:text-amber-800 border border-slate-200 hover:border-amber-300 transition-all shadow-xs shrink-0"
+                title="Compare Earth vs Venus vs Mars"
+              >
+                <Compass className="w-3.5 h-3.5 text-amber-600" />
+                <span>Planetology</span>
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Top-Right Mission Control Utility HUD */}
-        <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2 bg-white/85 backdrop-blur-xl border border-white/90 rounded-2xl p-1.5 sm:p-2 shadow-xl shadow-slate-200/50">
+        {/* 3. RIGHT CAPSULE: Mission Control Utility HUD */}
+        <div className="pointer-events-auto shrink-0 flex items-center gap-1 sm:gap-1.5 bg-white/85 backdrop-blur-xl border border-white/90 rounded-2xl p-1.5 sm:p-2 shadow-xl shadow-slate-200/50">
           {/* Feature 7: Official Technical Memo Report */}
           {onOpenReport && (
             <button

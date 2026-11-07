@@ -383,6 +383,11 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
     viewModeRef.current = viewMode;
   }, [viewMode]);
 
+  const selectedPlanetIdRef = useRef(selectedPlanetId);
+  useEffect(() => {
+    selectedPlanetIdRef.current = selectedPlanetId;
+  }, [selectedPlanetId]);
+
   // Projected 3D Callout Badges for Structure Cutaway (matching User's Image 3)
   interface StructureCallout {
     name: string;
@@ -1177,15 +1182,19 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       stars.rotation.y += 0.0001;
 
       // Calculate 3D Callout Positions for Structure Cutaway (throttled to 80ms - zero UI stutter)
-      if (viewMode === 'structure' && structureGroupRef.current && container) {
+      if (viewModeRef.current === 'structure' && structureGroupRef.current && container) {
         const now = performance.now();
-        if (now - lastCalloutUpdate > 80) {
+        if (now - lastCalloutUpdate > 75) {
           lastCalloutUpdate = now;
-          const curPlanet = SOLAR_PLANETS.find((p) => p.id === selectedPlanetId) || SOLAR_PLANETS[3];
+          const curPlanet = SOLAR_PLANETS.find((p) => p.id === selectedPlanetIdRef.current) || SOLAR_PLANETS[3];
           const pr = curPlanet.radius;
           const cw = container.clientWidth;
           const ch = container.clientHeight;
           const callouts: StructureCallout[] = [];
+          const numLayers = curPlanet.layers.length;
+
+          // Ensure group matrixWorld is up-to-date
+          structureGroupRef.current.updateMatrixWorld(true);
 
           curPlanet.layers.forEach((layer, idx) => {
             const rOuter = pr * layer.thicknessRadius;
@@ -1195,17 +1204,21 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
                 : 0;
             const rMid = (rOuter + rInner) / 2;
 
-            const ptLocal = new THREE.Vector3(rMid * 0.92, rMid * 0.22, 0.04);
-            const ptWorld = ptLocal.applyMatrix4(structureGroupRef.current!.matrixWorld);
+            // Wedge cut face 1 is in XY plane at rotation.y ~ 0.4.
+            // Using an angle around 0.4 rad (~23 deg) places the point clearly on the cut wedge
+            const ptLocal = new THREE.Vector3(rMid * Math.cos(0.4), rMid * Math.sin(0.4), 0.05);
+            const ptWorld = ptLocal.clone().applyMatrix4(structureGroupRef.current!.matrixWorld);
             ptWorld.project(camera);
 
             if (ptWorld.z < 1) {
               const startX = (ptWorld.x * 0.5 + 0.5) * cw;
               const startY = (-ptWorld.y * 0.5 + 0.5) * ch;
 
-              // Anchor to the right of cutaway
-              const endX = Math.min(cw - 240, Math.max(startX + 90, cw * 0.62));
-              const endY = Math.max(100, Math.min(ch - 140, startY + (idx - 1.5) * 44));
+              // Anchor to the right of cutaway with guaranteed vertical spacing to prevent overlapping
+              const endX = Math.min(cw - 260, Math.max(startX + 80, cw * 0.58));
+              const baseCenterY = ch * 0.48;
+              const slotSpacing = 74; // ample room for 56px cards, preventing any vertical overlap
+              const endY = Math.max(90, Math.min(ch - 130, baseCenterY + (idx - (numLayers - 1) / 2) * slotSpacing));
 
               callouts.push({
                 name: layer.name,
@@ -1257,6 +1270,9 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         if (buildStructureRef.current) {
           buildStructureRef.current(targetPlanet);
         }
+        planetMeshesRef.current.forEach((mesh) => {
+          mesh.visible = true;
+        });
         if (selectedObj) {
           structureGroupRef.current.position.copy(selectedObj.position);
           structureGroupRef.current.visible = true;
@@ -1295,12 +1311,12 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
 
                 {/* Angled Leader Line */}
                 <polyline
-                  points={`${c.startX},${c.startY} ${c.startX + 28},${c.endY} ${c.endX},${c.endY}`}
+                  points={`${c.startX},${c.startY} ${c.startX + 26},${c.endY} ${c.endX},${c.endY}`}
                   fill="none"
                   stroke={c.color}
-                  strokeWidth={1.6}
+                  strokeWidth={1.8}
                   strokeDasharray="4,2"
-                  opacity={0.85}
+                  opacity={0.9}
                 />
                 <rect
                   x={c.endX - 2}
@@ -1313,30 +1329,31 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
             ))}
           </svg>
 
-          {/* Callout Cards (Precision Glassmorphic Light Mode) */}
+          {/* Callout Cards (Precision Glassmorphic Light Mode - Strictly Non-Overlapping) */}
           {structureCallouts.map((c, i) => (
             <div
               key={i}
-              className="absolute pointer-events-none font-sans transition-transform duration-75 select-none"
+              className="absolute pointer-events-none font-sans select-none"
               style={{
                 left: `${c.endX + 10}px`,
                 top: `${c.endY - 26}px`,
+                maxWidth: '240px',
               }}
             >
-              <div className="bg-white/90 backdrop-blur-md border border-slate-200/90 rounded-2xl px-3.5 py-2 shadow-lg shadow-slate-200/60 max-w-[240px]">
+              <div className="bg-white/92 backdrop-blur-md border border-slate-200/90 rounded-2xl px-3.5 py-2 shadow-lg shadow-slate-200/60 max-w-[240px]">
                 <div className="flex items-center gap-2">
                   <span
-                    className="w-1.5 h-3.5 rounded-xs shrink-0"
+                    className="w-2 h-2 rotate-45 shrink-0"
                     style={{ backgroundColor: c.color }}
                   ></span>
-                  <span className="text-xs font-black tracking-tight text-slate-900 uppercase truncate">
+                  <span className="text-xs font-orbitron font-extrabold tracking-tight text-slate-900 uppercase truncate">
                     {c.name}
                   </span>
                 </div>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-[#0369A1] mt-0.5">
+                <div className="text-[10px] font-orbitron font-bold uppercase tracking-wider text-[#0369A1] mt-0.5">
                   {c.subtitle}
                 </div>
-                <div className="text-[9px] text-slate-500 truncate">
+                <div className="text-[9px] font-space text-slate-500 truncate">
                   {c.composition}
                 </div>
               </div>

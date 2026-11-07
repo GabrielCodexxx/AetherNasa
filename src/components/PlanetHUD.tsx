@@ -112,95 +112,43 @@ export const PlanetHUD: React.FC<PlanetHUDProps> = ({
           {/* Mode 1: STRUCTURE (Internal Cutaway View) */}
           {isStructureMode ? (
             <div className="space-y-3.5 max-h-[58vh] overflow-y-auto pr-1">
-              {planet.id === 'earth' ? (
-                <div className="space-y-3 text-xs">
-                  <div className="p-3.5 rounded-2xl bg-white/90 border border-slate-200/90 shadow-xs space-y-1 hover:border-sky-300 transition-all">
-                    <p className="font-orbitron font-black text-[#0369A1] text-xs tracking-wider uppercase">
-                      CRUST & LITHOSPHERE
-                    </p>
-                    <p className="font-space text-slate-600 leading-relaxed">
-                      Earth’s crust, together with the uppermost parts of the mantle forms the lithosphere. The lithosphere is broken into a series of tectonic plates which "float" on a more elastic part of the upper mantle. The motion of these plates gives rise to earthquakes and volcanism.
-                    </p>
-                    <p className="font-space text-[10px] text-slate-400 pt-1">
-                      <span className="font-semibold text-slate-500">Composition:</span> Solid Silicate Rock, Mostly Basalt
-                    </p>
-                  </div>
+              <p className="font-space text-xs text-slate-500 leading-relaxed">
+                Internal layering determined through gravitational harmonics, spectroscopic missions, and planetary seismology.
+              </p>
 
-                  <div className="p-3.5 rounded-2xl bg-white/90 border border-slate-200/90 shadow-xs space-y-1 hover:border-sky-300 transition-all">
-                    <p className="font-orbitron font-black text-[#0369A1] text-xs tracking-wider uppercase">
-                      MANTLE
-                    </p>
-                    <p className="font-space text-slate-600 leading-relaxed">
-                      The Earth’s mantle is a rocky shell which accounts for 84% of the planet's volume. The very uppermost regions of the mantle are the most solid and are relatively rigid.
-                    </p>
-                    <p className="font-space text-[10px] text-slate-400 pt-1">
-                      <span className="font-semibold text-slate-500">Composition:</span> Solid Silicate Rock (Peridotite / Bridgmanite)
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-white/90 border border-slate-200/90 shadow-xs space-y-1 hover:border-sky-300 transition-all">
-                    <p className="font-orbitron font-black text-[#0369A1] text-xs tracking-wider uppercase">
-                      OUTER CORE
-                    </p>
-                    <p className="font-space text-slate-600 leading-relaxed">
-                      The temperature difference within the outer core drives convection currents, with hot liquid metals rising, cooling and then descending back towards the hot inner core. These convection currents power the Earth’s magnetic field.
-                    </p>
-                    <p className="font-space text-[10px] text-slate-400 pt-1">
-                      <span className="font-semibold text-slate-500">Composition:</span> Liquid Iron and Nickel (4,000°C - 5,000°C)
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-white/90 border border-slate-200/90 shadow-xs space-y-1 hover:border-sky-300 transition-all">
-                    <p className="font-orbitron font-black text-[#0369A1] text-xs tracking-wider uppercase">
-                      INNER CORE
-                    </p>
-                    <p className="font-space text-slate-600 leading-relaxed">
-                      Dense solid ball made mostly of iron and nickel under extreme gravitational pressure (over 3 million atmospheres), remaining crystalline despite temperatures exceeding 5,400°C.
-                    </p>
-                    <p className="font-space text-[10px] text-slate-400 pt-1">
-                      <span className="font-semibold text-slate-500">Composition:</span> Dense Solid Iron and Nickel Crystal
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <p className="font-space text-xs text-slate-500 leading-relaxed">
-                    Internal layering determined through gravitational harmonics, spectroscopic missions, and planetary seismology.
-                  </p>
-
-                  {planet.layers.map((layer, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3.5 rounded-2xl bg-white/90 border border-slate-200/90 space-y-1.5 shadow-xs transition-all hover:border-sky-300"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-orbitron font-black text-slate-900 text-xs tracking-wider flex items-center gap-2">
-                          <span
-                            className="w-1.5 h-3.5 rounded-xs"
-                            style={{ backgroundColor: layer.color }}
-                          ></span>
-                          {layer.name}
-                        </span>
-                        <span className="font-orbitron text-[9px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
-                          {Math.round(layer.thicknessRadius * 100)}% RADIUS
-                        </span>
-                      </div>
-
-                      <p className="font-orbitron text-[10px] text-[#0369A1] font-bold uppercase tracking-wider">
-                        {layer.subtitle}
-                      </p>
-
-                      <p className="font-space text-xs text-slate-600 leading-relaxed">
-                        {layer.description}
-                      </p>
-
-                      <div className="pt-1 font-space text-[10px] text-slate-500">
-                        <span className="font-semibold text-slate-400">Composition:</span> {layer.composition}
-                      </div>
+              <div className="space-y-3">
+                {planet.layers.map((layer, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3.5 rounded-2xl bg-white/90 border border-slate-200/90 space-y-1.5 shadow-xs transition-all hover:border-sky-300"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-orbitron font-black text-slate-900 text-xs tracking-wider flex items-center gap-2">
+                        <span
+                          className="w-2 h-2 rotate-45 shrink-0"
+                          style={{ backgroundColor: layer.color }}
+                        ></span>
+                        {layer.name}
+                      </span>
+                      <span className="font-orbitron text-[9px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                        {Math.round(layer.thicknessRadius * 100)}% RADIUS
+                      </span>
                     </div>
-                  ))}
-                </div>
-              )}
+
+                    <p className="font-orbitron text-[10px] text-[#0369A1] font-bold uppercase tracking-wider">
+                      {layer.subtitle}
+                    </p>
+
+                    <p className="font-space text-xs text-slate-600 leading-relaxed">
+                      {layer.description}
+                    </p>
+
+                    <div className="pt-1 font-space text-[10px] text-slate-500">
+                      <span className="font-semibold text-slate-400">Composition:</span> {layer.composition}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
             /* Mode 2: Standard Planetary Dossier */
