@@ -1,36 +1,35 @@
 import React, { useState } from 'react';
-import { Rocket, Moon, Globe, Volume2, VolumeX, Play, Pause, ShieldAlert, Award, Trophy, Compass } from 'lucide-react';
-import type { OutpostLocation } from '../types/trainer';
+import { Moon, Volume2, VolumeX, Play, Pause, ShieldAlert, Award, Trophy, Compass, RotateCcw } from 'lucide-react';
 import { soundManager } from '../utils/soundEffects';
 
 interface HeaderProps {
-  location: OutpostLocation;
   missionTime: number;
   isPaused: boolean;
   speed: 1 | 2 | 5;
   activeCrisis: boolean;
-  onSwitchLocation: (loc: OutpostLocation) => void;
+  stormsSurvived: number;
   onTogglePause: () => void;
   onSetSpeed: (speed: 1 | 2 | 5) => void;
   onOpenAcademy: () => void;
   onOpenLeaderboard: () => void;
   onOpenBriefing: () => void;
   onTriggerCrisis: () => void;
+  onRestart: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  location,
   missionTime,
   isPaused,
   speed,
   activeCrisis,
-  onSwitchLocation,
+  stormsSurvived,
   onTogglePause,
   onSetSpeed,
   onOpenAcademy,
   onOpenLeaderboard,
   onOpenBriefing,
   onTriggerCrisis,
+  onRestart,
 }) => {
   const [muted, setMuted] = useState(soundManager.isMuted());
 
@@ -48,84 +47,60 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="border-b border-cyan-900/40 bg-slate-950/90 backdrop-blur-xl px-4 py-3 sticky top-0 z-40 shadow-2xl">
+    <header className="border-b border-amber-900/40 bg-slate-950/90 backdrop-blur-xl px-4 py-3 sticky top-0 z-40 shadow-2xl">
       <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-        {/* Left: NASA Artemis Aerospace Branding */}
+        {/* Left: Branding */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-700 flex items-center justify-center shadow-lg shadow-cyan-500/25 border border-cyan-400/40">
-            <Rocket className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-yellow-500 flex items-center justify-center shadow-lg shadow-amber-500/25 border border-amber-400/40">
+            <Moon className="w-5 h-5 text-slate-950" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="text-lg font-black tracking-widest text-white uppercase font-mono">
-                AETHER
+                LUNAR RESOURCE MANAGER
               </span>
-              <span className="text-[10px] font-mono font-bold bg-cyan-950/90 text-cyan-300 border border-cyan-500/40 rounded px-1.5 py-0.5 tracking-wider">
+              <span className="text-[10px] font-mono font-bold bg-amber-950/90 text-amber-300 border border-amber-500/40 rounded px-1.5 py-0.5 tracking-wider">
                 NASA SPACE APPS 2026
               </span>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-slate-400 font-mono">
-              <span className="text-slate-300 font-semibold">JUNIOR ASTRONAUT TRAINER</span>
+              <span className="text-slate-300 font-semibold">3-RESOURCE SURVIVAL SIM</span>
               <span>&bull;</span>
-              <span className="text-cyan-400 font-bold">{formatMET(missionTime)}</span>
+              <span className="text-amber-400 font-bold">{formatMET(missionTime)}</span>
+              <span>&bull;</span>
+              <span className="text-cyan-400">Storms Deflected: {stormsSurvived}</span>
             </div>
           </div>
         </div>
 
-        {/* Center: Mission Theater Switcher */}
-        <div className="flex items-center bg-slate-900/90 border border-slate-800 p-1 rounded-xl shadow-inner">
-          <button
-            onClick={() => onSwitchLocation('lunar')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              location === 'lunar'
-                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-cyan-500/20 border border-cyan-400/40'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Moon className="w-3.5 h-3.5 text-cyan-300" />
-            <span>Lunar Base Camp</span>
-          </button>
-          <button
-            onClick={() => onSwitchLocation('mars')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              location === 'mars'
-                ? 'bg-gradient-to-r from-amber-600 to-rose-600 text-white shadow-md shadow-rose-500/20 border border-rose-400/40'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Globe className="w-3.5 h-3.5 text-orange-400" />
-            <span>Mars Jezero Hab</span>
-          </button>
-        </div>
-
-        {/* Right: Quick Action Controls */}
+        {/* Right: Actions */}
         <div className="flex items-center gap-2">
-          {/* Mission Scenario Briefing Modal Trigger */}
+          {/* Mission Scenario Briefing Modal */}
           <button
             onClick={onOpenBriefing}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-950/60 border border-cyan-500/40 hover:bg-cyan-900/50 rounded-lg text-xs font-semibold text-cyan-300 transition-all shadow-sm shadow-cyan-950/40"
-            title="Read Mission Scenario & Scientific Architecture"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-950/60 border border-amber-500/50 hover:bg-amber-900/50 rounded-lg text-xs font-semibold text-amber-300 transition-all shadow-sm"
+            title="Read Scenario Explanation & Why 3 Resources Wins"
           >
-            <Compass className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
-            <span>Scenario Briefing</span>
+            <Compass className="w-3.5 h-3.5 text-amber-400" />
+            <span>Scenario Explanation</span>
           </button>
 
-          {/* Emergency Crisis Drill */}
+          {/* Trigger Solar Storm Drill */}
           <button
             onClick={onTriggerCrisis}
             disabled={activeCrisis}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
               activeCrisis
-                ? 'bg-red-950/70 text-red-300 border-red-500/60 animate-pulse'
+                ? 'bg-red-950/80 text-red-300 border-red-500/60 animate-pulse'
                 : 'bg-red-950/30 text-red-300 border-red-800/40 hover:bg-red-900/40'
             }`}
-            title="Trigger space weather crisis simulation"
+            title="Simulate a Solar Storm flare"
           >
             <ShieldAlert className="w-3.5 h-3.5 text-red-400" />
-            <span>Crisis Drill</span>
+            <span>Solar Storm Drill</span>
           </button>
 
-          {/* Time Speed */}
+          {/* Time Warp Speed */}
           <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5">
             <button
               onClick={onTogglePause}
@@ -139,7 +114,7 @@ export const Header: React.FC<HeaderProps> = ({
                 key={s}
                 onClick={() => onSetSpeed(s)}
                 className={`px-2 py-1 text-xs font-mono font-bold rounded ${
-                  speed === s ? 'bg-cyan-500/20 text-cyan-300' : 'text-slate-400 hover:text-white'
+                  speed === s ? 'bg-amber-500/20 text-amber-300' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 {s}x
@@ -147,10 +122,19 @@ export const Header: React.FC<HeaderProps> = ({
             ))}
           </div>
 
+          {/* Restart */}
+          <button
+            onClick={onRestart}
+            className="p-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg text-slate-300 hover:text-white"
+            title="Restart Mission"
+          >
+            <RotateCcw className="w-4 h-4 text-slate-400 hover:text-white" />
+          </button>
+
           {/* Badges */}
           <button
             onClick={onOpenAcademy}
-            className="flex items-center gap-1 px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-cyan-500/40 rounded-lg text-xs font-medium text-slate-200 hover:text-white transition-all"
+            className="flex items-center gap-1 px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded-lg text-xs font-medium text-slate-200 hover:text-white transition-all"
           >
             <Award className="w-3.5 h-3.5 text-amber-400" />
             <span>Badges</span>
@@ -171,7 +155,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="p-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg text-slate-300 hover:text-white"
             title={muted ? 'Unmute audio' : 'Mute audio'}
           >
-            {muted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-cyan-400" />}
+            {muted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-amber-400" />}
           </button>
         </div>
       </div>

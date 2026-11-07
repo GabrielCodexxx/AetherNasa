@@ -1,12 +1,57 @@
+export type HazardType = 'clear_skies' | 'solar_storm' | 'dust_storm' | 'eclipse';
+
+export interface SolHazard {
+  type: HazardType;
+  title: string;
+  badge: string;
+  description: string;
+  solarGeneration: number;  // % power gained from solar panels
+  o2Depletion: number;      // % oxygen lost naturally
+  shieldDepletion: number;  // % shields lost naturally
+  nasaFact: string;
+}
+
+export interface TurnResources {
+  power: number;     // 0 - 100% (Yellow)
+  oxygen: number;    // 0 - 100% (Blue)
+  shielding: number; // 0 - 100% (Green)
+}
+
+export type LunarResources = TurnResources;
+
+export interface PowerAllocation {
+  toOxygen: number;
+  toShield: number;
+}
+
+export interface LunarEnvironment {
+  solarProduction: number;
+  ambientRadiation: number;
+  isSolarStorm: boolean;
+  stormTimeRemaining: number;
+  dayNightPhase: 'day' | 'night' | 'eclipse';
+  sunElevation: number;
+}
+
+export interface LunarCrisis {
+  id: string;
+  title: string;
+  description: string;
+  severity: 'minor' | 'major' | 'extreme';
+  radiationMultiplier: number;
+  durationSeconds: number;
+  nasaContext: string;
+}
+
 export type OutpostLocation = 'lunar' | 'mars';
 
 export interface OutpostResources {
-  oxygen: number;        // percentage (0-100%)
-  water: number;         // percentage (0-100%)
-  power: number;         // kW (0-100%)
-  food: number;          // kg/days (0-100%)
-  shielding: number;     // radiation protection (0-100%)
-  morale: number;        // crew happiness/focus (0-100%)
+  oxygen: number;
+  water: number;
+  power: number;
+  food: number;
+  shielding: number;
+  morale: number;
 }
 
 export interface ResourceDeltas {
@@ -27,12 +72,12 @@ export interface OutpostModule {
   level: number;
   maxLevel: number;
   status: 'operational' | 'damaged' | 'offline';
-  powerCost: number;     // kW consumed
-  powerOutput: number;   // kW produced
-  o2Output: number;      // O2 delta
-  waterOutput: number;   // H2O delta
-  foodOutput: number;    // Food delta
-  shieldOutput: number;  // Radiation shield bonus
+  powerCost: number;
+  powerOutput: number;
+  o2Output: number;
+  waterOutput: number;
+  foodOutput: number;
+  shieldOutput: number;
   description: string;
   nasaRef: string;
 }
@@ -48,10 +93,10 @@ export interface ChoiceOption {
 export interface CrisisEvent {
   id: string;
   title: string;
-  source: string; // e.g. "NASA DONKI Alert" or "Perseverance Weather Station"
+  source: string;
   description: string;
   severity: 'advisory' | 'warning' | 'emergency';
-  countdown: number; // seconds left to respond
+  countdown: number;
   options: ChoiceOption[];
 }
 
@@ -74,3 +119,5 @@ export interface OutpostMissionConfig {
   solarFlux: string;
   primaryRisk: string;
 }
+
+export type LunarCadetBadge = CadetBadge;

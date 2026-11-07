@@ -1,7 +1,10 @@
-// Lightweight Web Audio API synthesizer for NASA Mission Control UI
+// Procedural Web Audio API sound generator for Lunar Resource Manager
 class SoundFX {
   private ctx: AudioContext | null = null;
   private soundEnabled: boolean = true;
+  private humOsc: OscillatorNode | null = null;
+  private humGain: GainNode | null = null;
+  private isHumming: boolean = false;
 
   private initCtx() {
     if (!this.ctx && typeof window !== 'undefined') {
@@ -17,6 +20,9 @@ class SoundFX {
 
   public toggleMute(): boolean {
     this.soundEnabled = !this.soundEnabled;
+    if (!this.soundEnabled) {
+      this.stopAmbientHum();
+    }
     return this.soundEnabled;
   }
 
@@ -24,8 +30,52 @@ class SoundFX {
     return !this.soundEnabled;
   }
 
-  // Soft console blip for button taps
-  public playBeep(freq = 880, duration = 0.06, type: OscillatorType = 'sine') {
+  public toggleAmbientHum(): boolean {
+    if (this.isHumming) {
+      this.stopAmbientHum();
+      return false;
+    } else {
+      this.startAmbientHum();
+      return true;
+    }
+  }
+
+  public startAmbientHum() {
+    if (!this.soundEnabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx || this.isHumming) return;
+
+      this.humOsc = this.ctx.createOscillator();
+      this.humGain = this.ctx.createGain();
+
+      this.humOsc.type = 'sine';
+      this.humOsc.frequency.setValueAtTime(55, this.ctx.currentTime);
+      this.humGain.gain.setValueAtTime(0.02, this.ctx.currentTime);
+
+      this.humOsc.connect(this.humGain);
+      this.humGain.connect(this.ctx.destination);
+      this.humOsc.start();
+      this.isHumming = true;
+    } catch {
+      // Ignored
+    }
+  }
+
+  public stopAmbientHum() {
+    try {
+      if (this.humOsc) {
+        this.humOsc.stop();
+        this.humOsc.disconnect();
+        this.humOsc = null;
+      }
+      this.isHumming = false;
+    } catch {
+      // Ignored
+    }
+  }
+
+  public playBeep(freq = 660, duration = 0.08, type: OscillatorType = 'triangle') {
     if (!this.soundEnabled) return;
     try {
       this.initCtx();
@@ -35,7 +85,7 @@ class SoundFX {
       const gain = this.ctx.createGain();
       osc.type = type;
       osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-      gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+      gain.gain.setValueAtTime(0.07, this.ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
 
       osc.connect(gain);
@@ -43,12 +93,60 @@ class SoundFX {
       osc.start();
       osc.stop(this.ctx.currentTime + duration);
     } catch {
-      // Audio context might be restricted before interaction
+      // Ignored
     }
   }
 
-  // Mission successful / Badge unlocked chime
+  public playPlusBeep() {
+    this.playBeep(880, 0.09, 'triangle');
+  }
+
+  public playMinusBeep() {
+    this.playBeep(440, 0.09, 'sine');
+  }
+
+  public playErrorBuzz() {
+    this.playBeep(140, 0.15, 'sawtooth');
+  }
+
   public playSuccessChime() {
+    if (!this.soundEnabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+
+      const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx!.createOscillator();
+        const gain = this.ctx!.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, this.ctx!.currentTime + idx * 0.08);
+        gain.gain.setValueAtTime(0.06, this.ctx!.currentTime + idx * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx!.currentTime + idx * 0.08 + 0.2);
+
+        osc.connect(gain);
+        gain.connect(this.ctx!.destination);
+        osc.start(this.ctx!.currentTime + idx * 0.08);
+        osc.stop(this.ctx!.currentTime + idx * 0.08 + 0.22);
+      });
+    } catch {
+      // Ignored
+    }
+  }
+
+  public playEndDayChime() {
+    this.playSuccessChime();
+  }
+
+  public playAlertSiren() {
+    this.playBeep(320, 0.25, 'sawtooth');
+  }
+
+  public playFailureTone() {
+    this.playBeep(180, 0.4, 'sawtooth');
+  }
+
+  public playVictoryFanfare() {
     if (!this.soundEnabled) return;
     try {
       this.initCtx();
@@ -59,43 +157,15 @@ class SoundFX {
         const osc = this.ctx!.createOscillator();
         const gain = this.ctx!.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, this.ctx!.currentTime + idx * 0.1);
-        gain.gain.setValueAtTime(0.08, this.ctx!.currentTime + idx * 0.1);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx!.currentTime + idx * 0.1 + 0.3);
+        osc.frequency.setValueAtTime(freq, this.ctx!.currentTime + idx * 0.12);
+        gain.gain.setValueAtTime(0.09, this.ctx!.currentTime + idx * 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx!.currentTime + idx * 0.12 + 0.4);
 
         osc.connect(gain);
         gain.connect(this.ctx!.destination);
-        osc.start(this.ctx!.currentTime + idx * 0.1);
-        osc.stop(this.ctx!.currentTime + idx * 0.1 + 0.35);
+        osc.start(this.ctx!.currentTime + idx * 0.12);
+        osc.stop(this.ctx!.currentTime + idx * 0.12 + 0.45);
       });
-    } catch {
-      // Ignored
-    }
-  }
-
-  // NASA Emergency Klaxon siren
-  public playAlertSiren() {
-    if (!this.soundEnabled) return;
-    try {
-      this.initCtx();
-      if (!this.ctx) return;
-
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'sawtooth';
-      
-      const now = this.ctx.currentTime;
-      osc.frequency.setValueAtTime(440, now);
-      osc.frequency.linearRampToValueAtTime(880, now + 0.25);
-      osc.frequency.linearRampToValueAtTime(440, now + 0.5);
-
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.55);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.6);
     } catch {
       // Ignored
     }
