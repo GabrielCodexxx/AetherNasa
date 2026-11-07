@@ -134,24 +134,22 @@ export const DetectiveLogModal: React.FC<DetectiveLogModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-3xl max-h-[90vh] bg-slate-900 border-2 border-slate-700 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/30 backdrop-blur-md animate-fade-in font-sans">
+      <div className="relative w-full max-w-3xl max-h-[90vh] bg-white/95 backdrop-blur-2xl border border-white/80 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-slate-800">
         {/* Header */}
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div className="p-6 border-b border-slate-200/80 flex items-center justify-between bg-slate-50/70">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-[#15803D]">
               <Database className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold font-mono text-white flex items-center gap-2">
+              <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
                 TREND DETECTIVE CASE LOGBOOK
               </h2>
-              <p className="text-xs text-slate-400 font-mono flex items-center gap-2">
+              <p className="text-xs text-slate-500 font-medium flex items-center gap-2">
                 <span
                   className={`w-2 h-2 rounded-full ${
-                    isSupabaseConfigured
-                      ? 'bg-emerald-400 shadow-sm shadow-emerald-400'
-                      : 'bg-amber-400'
+                    isSupabaseConfigured ? 'bg-[#15803D]' : 'bg-amber-500'
                   }`}
                 ></span>
                 {isSupabaseConfigured
@@ -165,18 +163,18 @@ export const DetectiveLogModal: React.FC<DetectiveLogModalProps> = ({
               soundManager.playClick();
               onClose();
             }}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Log Submission Form */}
-        <div className="p-6 border-b border-slate-800 bg-slate-950/40">
+        <div className="p-6 border-b border-slate-200/80 bg-slate-50/40">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
-                <label className="block text-xs font-mono text-slate-400 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Detective Callsign / Name
                 </label>
                 <input
@@ -185,22 +183,22 @@ export const DetectiveLogModal: React.FC<DetectiveLogModalProps> = ({
                   placeholder="e.g. Officer Holmes (Goddard)"
                   value={callsign}
                   onChange={(e) => setCallsign(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0369A1]"
                 />
               </div>
 
               <div className="flex-1">
-                <label className="block text-xs font-mono text-slate-400 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Target Earth Science Variable
                 </label>
-                <div className="px-3.5 py-2 rounded-xl bg-slate-800/80 border border-slate-700 text-sm font-mono text-cyan-300 truncate">
+                <div className="px-3.5 py-2 rounded-xl bg-slate-100 border border-slate-200 text-sm font-semibold text-[#0369A1] truncate">
                   {selectedTrend.name} ({currentYear})
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-mono text-slate-400 mb-1">
+              <label className="block text-xs font-semibold text-slate-600 mb-1">
                 Detective Investigation Findings & Regional Divergence Notes
               </label>
               <textarea
@@ -208,17 +206,17 @@ export const DetectiveLogModal: React.FC<DetectiveLogModalProps> = ({
                 placeholder="Log your evidence on what is changing, where it is changing, and statistical significance..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-sans"
+                className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0369A1]"
               />
             </div>
 
             <div className="flex items-center justify-between">
               {submitSuccess ? (
-                <span className="text-xs font-mono text-emerald-400 flex items-center gap-1.5">
+                <span className="text-xs font-bold text-[#15803D] flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4" /> Investigation Case Filed Successfully!
                 </span>
               ) : (
-                <span className="text-xs font-mono text-slate-500">
+                <span className="text-xs font-medium text-slate-400">
                   Case telemetry is permanently logged
                 </span>
               )}
@@ -226,7 +224,7 @@ export const DetectiveLogModal: React.FC<DetectiveLogModalProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting || !callsign.trim()}
-                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-mono font-bold text-xs flex items-center gap-2 transition-all shadow-md shadow-emerald-600/20"
+                className="px-5 py-2 rounded-xl bg-[#15803D] hover:bg-[#116630] disabled:opacity-50 text-white font-bold text-xs flex items-center gap-2 transition-all shadow-sm shadow-emerald-900/15"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>{isSubmitting ? 'Transmitting...' : 'File Detective Case'}</span>
@@ -237,8 +235,8 @@ export const DetectiveLogModal: React.FC<DetectiveLogModalProps> = ({
 
         {/* Case History */}
         <div className="p-6 overflow-y-auto flex-1 space-y-3">
-          <h3 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-            <Radio className="w-3.5 h-3.5 text-cyan-400" />
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+            <Radio className="w-3.5 h-3.5 text-[#0369A1]" />
             Filed Earth System Investigations ({logs.length})
           </h3>
 
@@ -246,25 +244,25 @@ export const DetectiveLogModal: React.FC<DetectiveLogModalProps> = ({
             {logs.map((log) => (
               <div
                 key={log.id}
-                className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800 flex flex-col gap-1.5"
+                className="p-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/80 flex flex-col gap-1.5 shadow-xs"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-sm text-white">
+                  <span className="font-extrabold text-sm text-slate-900">
                     {log.callsign}
                   </span>
-                  <span className="text-[10px] font-mono text-slate-500">
+                  <span className="text-[10px] font-medium text-slate-400">
                     {new Date(log.created_at).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-xs font-mono">
-                  <span className="text-cyan-400 font-bold">{log.variable_name}</span>
-                  <span className="text-slate-500">•</span>
-                  <span className="text-amber-400">Year {log.year}</span>
-                  <span className="text-slate-500">•</span>
-                  <span className="text-emerald-400">{log.significance_verdict}</span>
+                <div className="flex items-center gap-2 text-xs font-semibold">
+                  <span className="text-[#0369A1]">{log.variable_name}</span>
+                  <span className="text-slate-300">•</span>
+                  <span className="text-amber-700">Year {log.year}</span>
+                  <span className="text-slate-300">•</span>
+                  <span className="text-[#15803D]">{log.significance_verdict}</span>
                 </div>
                 {log.notes && (
-                  <p className="text-xs text-slate-300 italic bg-slate-900/50 p-2 rounded-xl border border-slate-800/60 font-sans">
+                  <p className="text-xs text-slate-600 italic bg-white p-2.5 rounded-xl border border-slate-200/70">
                     "{log.notes}"
                   </p>
                 )}
@@ -274,9 +272,9 @@ export const DetectiveLogModal: React.FC<DetectiveLogModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between text-xs font-mono text-slate-400">
+        <div className="p-4 border-t border-slate-200/80 bg-slate-50/70 flex items-center justify-between text-xs text-slate-500 font-medium">
           <span className="flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <ShieldCheck className="w-4 h-4 text-[#15803D]" />
             NASA Open Data Science Compliant
           </span>
           <button
@@ -284,7 +282,7 @@ export const DetectiveLogModal: React.FC<DetectiveLogModalProps> = ({
               soundManager.playClick();
               onClose();
             }}
-            className="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all"
+            className="px-4 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all font-semibold"
           >
             Close
           </button>
@@ -293,4 +291,5 @@ export const DetectiveLogModal: React.FC<DetectiveLogModalProps> = ({
     </div>
   );
 };
+
 export default DetectiveLogModal;

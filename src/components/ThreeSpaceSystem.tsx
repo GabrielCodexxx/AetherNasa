@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import type { PlanetData, HotspotMarker, SystemViewMode } from '../types/earthSystem';
 import { SOLAR_PLANETS, EARTH_HOTSPOTS } from '../utils/earthSystemData';
 import { soundManager } from '../utils/soundEffects';
-import { RotateCw, Grid, Sparkles, ZoomIn, ZoomOut } from 'lucide-react';
+import { RotateCw, Grid, Globe, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface ThreeSpaceSystemProps {
   viewMode: SystemViewMode;
@@ -408,7 +408,6 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
   const structureGroupRef = useRef<THREE.Group | null>(null);
   const buildStructureRef = useRef<((planet: PlanetData) => void) | null>(null);
   const cloudsMeshRef = useRef<THREE.Mesh | null>(null);
-  const shockwavesRef = useRef<THREE.Mesh[]>([]);
 
   // Projected 3D Callout Badges for Structure Cutaway (matching User's Image 3)
   interface StructureCallout {
@@ -467,10 +466,10 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
     const container = mountRef.current;
     if (!container) return;
 
-    // 1. Scene, Camera, Renderer
+    // 1. Scene, Camera, Renderer (Glassmorphic Eco-Tracker Light Palette)
     const scene = new THREE.Scene();
     sceneRef.current = scene;
-    scene.fog = new THREE.FogExp2(0x020617, 0.0035);
+    scene.fog = new THREE.FogExp2(0xf8fafc, 0.0009);
 
     const camera = new THREE.PerspectiveCamera(
       45,
@@ -489,7 +488,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.25;
+    renderer.toneMappingExposure = 1.35;
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
@@ -598,11 +597,11 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
     const sunLight = new THREE.PointLight(0xfff8eb, 4.5, 700, 0.5);
     scene.add(sunLight);
 
-    const ambientLight = new THREE.AmbientLight(0x1e293b, 1.4);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 2.2);
     scene.add(ambientLight);
 
-    // 4. Ecliptic Coordinate Grid
-    const gridHelper = new THREE.PolarGridHelper(160, 16, 8, 64, 0x06b6d4, 0x1e293b);
+    // 4. Ecliptic Coordinate Grid (Deep Ocean Blue & Soft Slate)
+    const gridHelper = new THREE.PolarGridHelper(160, 16, 8, 64, 0x0369a1, 0xcbd5e1);
     gridHelper.position.y = -0.5;
     scene.add(gridHelper);
 
@@ -638,7 +637,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         points.map((p) => new THREE.Vector3(p.x, 0, p.y))
       );
       const orbitMat = new THREE.LineBasicMaterial({
-        color: planet.id === 'earth' ? 0x38bdf8 : 0x334155,
+        color: planet.id === 'earth' ? 0x0369a1 : 0x94a3b8,
         transparent: true,
         opacity: planet.id === 'earth' ? 0.75 : 0.35,
       });
@@ -719,44 +718,45 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         moonMesh.position.set(5.2, 1.2, 0);
         pGroup.add(moonMesh);
 
-        // Hotspot Pins
-        const shockwaves: THREE.Mesh[] = [];
+        // Hotspot Pins on Earth (Clean Static Pins - NO pinging animation)
         EARTH_HOTSPOTS.forEach((hs) => {
           const pos = latLonToVector3(hs.lat, hs.lon, planet.radius);
           const norm = pos.clone().normalize();
 
           const color =
             hs.domain === 'cryosphere'
-              ? 0x38bdf8
+              ? 0x0284c7
               : hs.domain === 'biosphere'
-              ? 0x22c55e
+              ? 0x15803d
               : hs.domain === 'hydrosphere'
-              ? 0x3b82f6
-              : 0xef4444;
+              ? 0x0369a1
+              : 0xdc2626;
 
           const isSelected = selectedHotspotId === hs.id;
-          const pinGeo = new THREE.SphereGeometry(isSelected ? 0.22 : 0.14, 12, 12);
-          const pinMat = new THREE.MeshBasicMaterial({ color: isSelected ? 0xffffff : color });
+          const pinGeo = new THREE.SphereGeometry(isSelected ? 0.22 : 0.14, 16, 16);
+          const pinMat = new THREE.MeshStandardMaterial({
+            color: isSelected ? 0x0369a1 : color,
+            roughness: 0.3,
+            metalness: 0.2,
+          });
           const pin = new THREE.Mesh(pinGeo, pinMat);
-          pin.position.copy(pos.clone().add(norm.clone().multiplyScalar(0.12)));
+          pin.position.copy(pos.clone().add(norm.clone().multiplyScalar(0.08)));
           pin.userData = { isHotspot: true, data: hs };
           pGroup.add(pin);
 
-          const ringGeo = new THREE.RingGeometry(0.12, 0.22, 24);
-          const ringMat = new THREE.MeshBasicMaterial({
+          // Clean, static subtle halo ring (NO pinging animation)
+          const haloGeo = new THREE.RingGeometry(0.16, 0.22, 24);
+          const haloMat = new THREE.MeshBasicMaterial({
             color,
             side: THREE.DoubleSide,
             transparent: true,
-            opacity: 0.85,
+            opacity: 0.6,
           });
-          const ring = new THREE.Mesh(ringGeo, ringMat);
-          ring.position.copy(pos.clone().add(norm.clone().multiplyScalar(0.04)));
-          ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), norm);
-          ring.userData = { progress: Math.random(), maxScale: 3.5 };
-          pGroup.add(ring);
-          shockwaves.push(ring);
+          const halo = new THREE.Mesh(haloGeo, haloMat);
+          halo.position.copy(pos.clone().add(norm.clone().multiplyScalar(0.03)));
+          halo.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), norm);
+          pGroup.add(halo);
         });
-        shockwavesRef.current = shockwaves;
       } else {
         // Other Planets with Real Procedural Textures
         const tex = textureMap[planet.id];
@@ -1060,17 +1060,6 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       // Animate Asteroid Belt
       asteroidInstanced.rotation.y += 0.0004;
 
-      // Animate Shockwaves
-      shockwavesRef.current.forEach((sw) => {
-        sw.userData.progress = (sw.userData.progress + delta * 0.8) % 1.0;
-        const prog = sw.userData.progress;
-        const s = 1 + prog * (sw.userData.maxScale - 1);
-        sw.scale.set(s, s, 1);
-        if (sw.material instanceof THREE.MeshBasicMaterial) {
-          sw.material.opacity = Math.max(0, 0.9 * (1 - prog));
-        }
-      });
-
       // Rotate Starfield subtly
       stars.rotation.y += 0.0001;
 
@@ -1171,18 +1160,18 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       {/* 3D WebGL Canvas */}
       <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
 
-      {/* 3D Structure Cutaway Callout Annotations Overlay (matching User's Image 3) */}
+      {/* 3D Structure Cutaway Callout Annotations Overlay (Glassmorphic Eco-Tracker Light Mode) */}
       {viewMode === 'structure' && structureCallouts.length > 0 && (
         <div className="absolute inset-0 pointer-events-none z-20">
           <svg className="w-full h-full">
             {structureCallouts.map((c, i) => (
               <g key={i}>
-                {/* 3D Surface Anchor Dot */}
-                <circle cx={c.startX} cy={c.startY} r={4.5} fill={c.color} className="animate-pulse" />
+                {/* 3D Surface Anchor Dot (Clean Static Dot - NO pinging/pulsing) */}
+                <circle cx={c.startX} cy={c.startY} r={4.5} fill={c.color} />
                 <circle
                   cx={c.startX}
                   cy={c.startY}
-                  r={8}
+                  r={7.5}
                   fill="none"
                   stroke={c.color}
                   strokeWidth={1.5}
@@ -1196,37 +1185,37 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
                   stroke={c.color}
                   strokeWidth={1.6}
                   strokeDasharray="4,2"
-                  opacity={0.9}
+                  opacity={0.85}
                 />
                 <circle cx={c.endX} cy={c.endY} r={3} fill={c.color} />
               </g>
             ))}
           </svg>
 
-          {/* Callout Cards */}
+          {/* Callout Cards (Glassmorphic Light Mode) */}
           {structureCallouts.map((c, i) => (
             <div
               key={i}
-              className="absolute pointer-events-none font-mono transition-transform duration-75 select-none"
+              className="absolute pointer-events-none font-sans transition-transform duration-75 select-none"
               style={{
                 left: `${c.endX + 10}px`,
                 top: `${c.endY - 26}px`,
               }}
             >
-              <div className="bg-slate-950/90 backdrop-blur-md border border-cyan-500/40 rounded-xl px-3 py-1.5 shadow-2xl shadow-cyan-950/60 max-w-[220px]">
+              <div className="bg-white/85 backdrop-blur-md border border-white/80 rounded-2xl px-3.5 py-2 shadow-lg shadow-slate-200/60 max-w-[240px]">
                 <div className="flex items-center gap-1.5">
                   <span
                     className="w-2 h-2 rounded-full shrink-0"
                     style={{ backgroundColor: c.color }}
                   ></span>
-                  <span className="text-xs font-black tracking-wider text-white uppercase truncate">
+                  <span className="text-xs font-black tracking-tight text-slate-900 uppercase truncate">
                     {c.name}
                   </span>
                 </div>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-cyan-300">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[#0369A1]">
                   {c.subtitle}
                 </div>
-                <div className="text-[9px] text-slate-400 truncate">
+                <div className="text-[9px] text-slate-500 truncate">
                   {c.composition}
                 </div>
               </div>
@@ -1235,19 +1224,19 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         </div>
       )}
 
-      {/* Floating 3D Hover Tooltip */}
+      {/* Floating 3D Hover Tooltip (Clean Static Card) */}
       {hoveredLabel && (
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 pointer-events-none z-20 px-4 py-2 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-cyan-400/50 shadow-2xl text-xs font-mono font-bold text-cyan-300 flex items-center gap-2 animate-fade-in">
-          <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 pointer-events-none z-20 px-4 py-2 rounded-2xl bg-white/85 backdrop-blur-md border border-white/80 shadow-lg shadow-slate-200/50 text-xs font-bold text-slate-900 flex items-center gap-2 animate-fade-in font-sans">
+          <Globe className="w-3.5 h-3.5 text-[#0369A1]" />
           <span>{hoveredLabel}</span>
         </div>
       )}
 
-      {/* Manual Zoom & Navigation Dock */}
-      <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
+      {/* Manual Zoom & Navigation Dock (Glassmorphic Light Mode) */}
+      <div className="absolute bottom-6 left-6 z-20 flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/80 backdrop-blur-md border border-white/80 shadow-lg shadow-slate-200/50 font-sans">
         <button
           onClick={() => handleZoom(0.8)}
-          className="p-2 rounded-xl bg-slate-950/80 backdrop-blur-md border border-slate-800 text-slate-300 hover:text-white hover:border-cyan-500/50 transition-all shadow-lg"
+          className="p-2 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 hover:text-[#0369A1] hover:bg-sky-50 transition-all shadow-xs"
           title="Zoom In"
         >
           <ZoomIn className="w-4 h-4" />
@@ -1255,7 +1244,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
 
         <button
           onClick={() => handleZoom(1.25)}
-          className="p-2 rounded-xl bg-slate-950/80 backdrop-blur-md border border-slate-800 text-slate-300 hover:text-white hover:border-cyan-500/50 transition-all shadow-lg"
+          className="p-2 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 hover:text-[#0369A1] hover:bg-sky-50 transition-all shadow-xs"
           title="Zoom Out"
         >
           <ZoomOut className="w-4 h-4" />
@@ -1266,14 +1255,14 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
             soundManager.playClick();
             setAutoRotate(!autoRotate);
           }}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-bold backdrop-blur-md border transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
             autoRotate
-              ? 'bg-cyan-950/80 text-cyan-300 border-cyan-500/50 shadow-lg shadow-cyan-500/20'
-              : 'bg-slate-950/80 text-slate-400 border-slate-800 hover:text-white'
+              ? 'bg-sky-50 text-[#0369A1] border border-sky-300 shadow-xs'
+              : 'bg-slate-50 text-slate-600 border border-slate-200/80 hover:text-slate-900'
           }`}
           title="Toggle Planetary Orbit Animation"
         >
-          <RotateCw className={`w-3.5 h-3.5 ${autoRotate ? 'animate-spin' : ''}`} />
+          <RotateCw className="w-3.5 h-3.5" />
           <span>Orbit: {autoRotate ? 'ON' : 'OFF'}</span>
         </button>
 
@@ -1282,10 +1271,10 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
             soundManager.playClick();
             setShowGrid(!showGrid);
           }}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-bold backdrop-blur-md border transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
             showGrid
-              ? 'bg-slate-900/80 text-cyan-300 border-cyan-500/30'
-              : 'bg-slate-950/80 text-slate-400 border-slate-800 hover:text-white'
+              ? 'bg-sky-50 text-[#0369A1] border border-sky-300 shadow-xs'
+              : 'bg-slate-50 text-slate-600 border border-slate-200/80 hover:text-slate-900'
           }`}
           title="Toggle Orbital Plane Coordinates"
         >

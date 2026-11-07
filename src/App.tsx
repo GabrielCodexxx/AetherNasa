@@ -95,9 +95,17 @@ export function App() {
   const isStructureMode = viewMode === 'structure';
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-slate-950 text-slate-100 select-none font-sans">
+    <div className="relative w-screen h-screen overflow-hidden bg-[#f8fafc] text-slate-800 select-none font-sans">
+      {/* Large, blurred abstract gradients of Deep Ocean Blue (#0369A1) and Forest Green (#15803D) in the deep background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-[12%] -left-[10%] w-[55vw] h-[55vw] rounded-full bg-sky-200/50 blur-[130px]" />
+        <div className="absolute top-[20%] -right-[10%] w-[50vw] h-[50vw] rounded-full bg-emerald-200/40 blur-[140px]" />
+        <div className="absolute -bottom-[20%] left-[20%] w-[60vw] h-[60vw] rounded-full bg-teal-100/50 blur-[150px]" />
+        <div className="absolute top-[60%] left-[5%] w-[35vw] h-[35vw] rounded-full bg-blue-100/40 blur-[120px]" />
+      </div>
+
       {/* 1. Full-Screen 3D Universe, Solar System, Asteroid Belt, Earth & Structure Cutaway */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-10">
         <ThreeSpaceSystem
           viewMode={viewMode}
           selectedPlanetId={selectedPlanetId}
