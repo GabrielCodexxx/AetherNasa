@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import type { PlanetData, HotspotMarker, SystemViewMode } from '../types/earthSystem';
 import { SOLAR_PLANETS, EARTH_HOTSPOTS } from '../utils/earthSystemData';
 import { soundManager } from '../utils/soundEffects';
-import { RotateCw, Grid, Sparkles } from 'lucide-react';
+import { RotateCw, Grid, Sparkles, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface ThreeSpaceSystemProps {
   viewMode: SystemViewMode;
@@ -54,7 +54,7 @@ function generateEarthTexture(iceReductionFactor: number = 0): { diffuse: HTMLCa
   bCtx.fillStyle = '#202020';
   bCtx.fillRect(0, 0, width, height);
 
-  // 2. Continents (Rough continental landmasses)
+  // 2. Continents
   dCtx.fillStyle = '#15803d'; // Green vegetation
   bCtx.fillStyle = '#b0b0b0';
 
@@ -98,8 +98,7 @@ function generateEarthTexture(iceReductionFactor: number = 0): { diffuse: HTMLCa
   // Australia
   drawContinent(1620, 680, 130, 90, 0.15, '#b45309'); // Outback red/brown
 
-  // 3. Polar Ice Caps (Scale dynamically with ice loss factor)
-  // Arctic Sea Ice (Top)
+  // 3. Polar Ice Caps
   const arcticIceHeight = Math.max(30, 110 * (1 - iceReductionFactor * 0.45));
   const arcticGrad = dCtx.createLinearGradient(0, 0, 0, arcticIceHeight);
   arcticGrad.addColorStop(0, '#ffffff');
@@ -108,7 +107,6 @@ function generateEarthTexture(iceReductionFactor: number = 0): { diffuse: HTMLCa
   dCtx.fillStyle = arcticGrad;
   dCtx.fillRect(0, 0, width, arcticIceHeight);
 
-  // Antarctic Ice Sheet (Bottom)
   const antarcticStart = height - 120;
   const antarcticGrad = dCtx.createLinearGradient(0, antarcticStart, 0, height);
   antarcticGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
@@ -133,7 +131,6 @@ function generateCloudTexture(): HTMLCanvasElement {
   ctx.fillStyle = 'rgba(0, 0, 0, 0)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Swirling white storm fronts and atmospheric bands
   ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
   for (let i = 0; i < 70; i++) {
     const x = (i * 137) % canvas.width;
@@ -161,56 +158,69 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
   const [showGrid, setShowGrid] = useState(true);
   const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
 
-  // Internal references to 3D entities
+  // Dedicated Spherical Orbit & Camera Controller State
+  const orbitStateRef = useRef({
+    target: new THREE.Vector3(0, 0, 0),        // Center of orbit
+    radius: 180,                               // Distance (zoom)
+    theta: 0.2,                                // Azimuth angle
+    phi: Math.PI / 3.4,                        // Polar elevation angle
+    isTransitioning: false,                    // True only during fly-to animations
+    targetRadius: 180,
+    targetTheta: 0.2,
+    targetPhi: Math.PI / 3.4,
+    targetLookAt: new THREE.Vector3(0, 0, 0),
+  });
+
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const planetsGroupRef = useRef<THREE.Group | null>(null);
   const earthGroupRef = useRef<THREE.Group | null>(null);
   const structureGroupRef = useRef<THREE.Group | null>(null);
-  const earthMeshRef = useRef<THREE.Mesh | null>(null);
   const cloudsMeshRef = useRef<THREE.Mesh | null>(null);
   const shockwavesRef = useRef<THREE.Mesh[]>([]);
 
-  // Camera Target Interpolation
-  const targetCamPosRef = useRef<THREE.Vector3>(new THREE.Vector3(0, 45, 120));
-  const targetLookAtRef = useRef<THREE.Vector3>(new THREE.Vector3(0, 0, 0));
+  // Smoothly initiate a transition to a new view/target
+  const triggerFlyTo = useCallback((targetPos: THREE.Vector3, distance: number, elevation: number = Math.PI / 3.4) => {
+    orbitStateRef.current.targetLookAt.copy(targetPos);
+    orbitStateRef.current.targetRadius = distance;
+    orbitStateRef.current.targetPhi = elevation;
+    orbitStateRef.current.isTransitioning = true;
+  }, []);
 
-  // Switch camera modes
-  const updateCameraTarget = useCallback(() => {
-    if (viewMode === 'solar_system') {
-      // Wide cinematic overview of the whole solar system
-      targetCamPosRef.current.set(0, 80, 170);
-      targetLookAtRef.current.set(0, 0, 0);
-    } else if (viewMode === 'earth_focus') {
-      // Zoomed into Earth
-      const earth = SOLAR_PLANETS.find((p) => p.id === 'earth')!;
-      targetCamPosRef.current.set(earth.orbitDistance, 4, 16);
-      targetLookAtRef.current.set(earth.orbitDistance, 0, 0);
-    } else if (viewMode === 'structure') {
-      // Earth interior cutaway view
-      const earth = SOLAR_PLANETS.find((p) => p.id === 'earth')!;
-      targetCamPosRef.current.set(earth.orbitDistance, 6, 18);
-      targetLookAtRef.current.set(earth.orbitDistance, 0, 0);
-    }
-  }, [viewMode]);
-
+  // Update target when viewMode changes
   useEffect(() => {
-    updateCameraTarget();
-  }, [viewMode, updateCameraTarget]);
+    if (viewMode === 'solar_system') {
+      triggerFlyTo(new THREE.Vector3(0, 0, 0), 180, Math.PI / 3.2);
+    } else if (viewMode === 'earth_focus') {
+      const earth = SOLAR_PLANETS.find((p) => p.id === 'earth')!;
+      triggerFlyTo(new THREE.Vector3(earth.orbitDistance, 0, 0), 12, Math.PI / 2.4);
+    } else if (viewMode === 'structure') {
+      const earth = SOLAR_PLANETS.find((p) => p.id === 'earth')!;
+      triggerFlyTo(new THREE.Vector3(earth.orbitDistance, 0, 0), 14, Math.PI / 2.3);
+    }
+  }, [viewMode, triggerFlyTo]);
 
-  // When selected planet changes, target camera
+  // Update target when selected planet changes while in solar system mode
   useEffect(() => {
     if (viewMode === 'solar_system') {
       const planet = SOLAR_PLANETS.find((p) => p.id === selectedPlanetId);
       if (planet && planet.id !== 'sun') {
-        targetCamPosRef.current.set(planet.orbitDistance, planet.radius * 2 + 5, planet.radius * 3 + 12);
-        targetLookAtRef.current.set(planet.orbitDistance, 0, 0);
+        triggerFlyTo(new THREE.Vector3(planet.orbitDistance, 0, 0), planet.radius * 3.5 + 8, Math.PI / 2.6);
       } else {
-        targetCamPosRef.current.set(0, 80, 170);
-        targetLookAtRef.current.set(0, 0, 0);
+        triggerFlyTo(new THREE.Vector3(0, 0, 0), 180, Math.PI / 3.2);
       }
     }
-  }, [selectedPlanetId, viewMode]);
+  }, [selectedPlanetId, viewMode, triggerFlyTo]);
+
+  // Zoom Controls (+ / -)
+  const handleZoom = (factor: number) => {
+    soundManager.playClick();
+    orbitStateRef.current.isTransitioning = false; // Give immediate control to user
+    const minR = viewMode === 'solar_system' ? 25 : 5;
+    const maxR = viewMode === 'solar_system' ? 380 : 50;
+    const newR = orbitStateRef.current.radius * factor;
+    orbitStateRef.current.radius = Math.min(maxR, Math.max(minR, newR));
+    orbitStateRef.current.targetRadius = orbitStateRef.current.radius;
+  };
 
   // Main Three.js Scene Setup
   useEffect(() => {
@@ -228,7 +238,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       0.1,
       3000
     );
-    camera.position.set(0, 80, 170);
+    camera.position.set(0, 75, 175);
     cameraRef.current = camera;
 
     const renderer = new THREE.WebGLRenderer({
@@ -243,7 +253,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
-    // 2. Deep Space Universe: Milky Way Band & Starfield
+    // 2. Starfield & Milky Way
     const starCount = 3500;
     const starGeo = new THREE.BufferGeometry();
     const starPositions = new Float32Array(starCount * 3);
@@ -257,7 +267,6 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       starPositions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
       starPositions[i * 3 + 2] = r * Math.cos(phi);
 
-      // Multi-spectral star colors (Milky Way blues, golds, crystal whites)
       const rnd = Math.random();
       if (rnd > 0.8) {
         starColors[i * 3] = 0.55;
@@ -284,7 +293,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
     const stars = new THREE.Points(starGeo, starMat);
     scene.add(stars);
 
-    // Milky Way Galaxy Dust Band (Glowing curved particles)
+    // Milky Way Galaxy Band
     const mwCount = 1800;
     const mwGeo = new THREE.BufferGeometry();
     const mwPositions = new Float32Array(mwCount * 3);
@@ -298,7 +307,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       mwPositions[i * 3 + 1] = y;
       mwPositions[i * 3 + 2] = Math.sin(angle) * radius;
 
-      mwColors[i * 3] = 0.35 + Math.random() * 0.2; // Purple/Violet
+      mwColors[i * 3] = 0.35 + Math.random() * 0.2;
       mwColors[i * 3 + 1] = 0.2 + Math.random() * 0.3;
       mwColors[i * 3 + 2] = 0.7 + Math.random() * 0.3;
     }
@@ -314,17 +323,14 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
     const milkyWay = new THREE.Points(mwGeo, mwMat);
     scene.add(milkyWay);
 
-    // 3. Central Sun (Radiant Star with Corona)
+    // 3. Central Sun
     const sunData = SOLAR_PLANETS[0];
     const sunGeo = new THREE.SphereGeometry(sunData.radius, 48, 48);
-    const sunMat = new THREE.MeshBasicMaterial({
-      color: 0xffaa00,
-    });
+    const sunMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
     const sunMesh = new THREE.Mesh(sunGeo, sunMat);
     sunMesh.userData = { isPlanet: true, data: sunData };
     scene.add(sunMesh);
 
-    // Sun Corona Glow Atmosphere
     const coronaGeo = new THREE.SphereGeometry(sunData.radius * 1.35, 32, 32);
     const coronaMat = new THREE.ShaderMaterial({
       vertexShader: `
@@ -348,35 +354,29 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
     const coronaMesh = new THREE.Mesh(coronaGeo, coronaMat);
     sunMesh.add(coronaMesh);
 
-    // Sunlight PointLight
     const sunLight = new THREE.PointLight(0xfff8eb, 4.5, 600, 0.6);
     scene.add(sunLight);
 
     const ambientLight = new THREE.AmbientLight(0x1e293b, 1.2);
     scene.add(ambientLight);
 
-    // 4. Planets Group
+    // 4. Ecliptic Coordinate Grid
+    const gridHelper = new THREE.PolarGridHelper(160, 16, 8, 64, 0x06b6d4, 0x1e293b);
+    gridHelper.position.y = -0.5;
+    scene.add(gridHelper);
+
+    // 5. Planets Group
     const planetsGroup = new THREE.Group();
     scene.add(planetsGroup);
-    planetsGroupRef.current = planetsGroup;
 
-    // Track animated planet entities
     const animatedPlanets: {
       mesh: THREE.Object3D;
       data: PlanetData;
       angle: number;
     }[] = [];
 
-    // Ecliptic Coordinate Grid
-    const gridHelper = new THREE.PolarGridHelper(160, 16, 8, 64, 0x06b6d4, 0x1e293b);
-    gridHelper.position.y = -0.5;
-    scene.add(gridHelper);
-
-    // 5. Build Planets & Orbits
-    let earthRefObj: THREE.Group | null = null;
-
     SOLAR_PLANETS.slice(1).forEach((planet) => {
-      // A. Orbital Circle Path
+      // Orbital path line
       const orbitCurve = new THREE.EllipseCurve(
         0, 0, planet.orbitDistance, planet.orbitDistance, 0, Math.PI * 2, false, 0
       );
@@ -392,17 +392,14 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       const orbitLine = new THREE.Line(orbitGeo, orbitMat);
       scene.add(orbitLine);
 
-      // B. Planet Mesh or Group
+      // Planet container
       const pGroup = new THREE.Group();
       pGroup.position.set(planet.orbitDistance, 0, 0);
       planetsGroup.add(pGroup);
 
       if (planet.id === 'earth') {
-        // Detailed Earth Object
-        earthRefObj = pGroup;
         earthGroupRef.current = pGroup;
 
-        // Ice loss factor (0 in 1980, 1 in 2026)
         const iceFactor = (currentYear - 1980) / 46;
         const { diffuse, bump } = generateEarthTexture(iceFactor);
         const diffTex = new THREE.CanvasTexture(diffuse);
@@ -419,9 +416,8 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         const earthMesh = new THREE.Mesh(earthGeo, earthMat);
         earthMesh.userData = { isPlanet: true, data: planet };
         pGroup.add(earthMesh);
-        earthMeshRef.current = earthMesh;
 
-        // Atmospheric Rayleigh Rim Glow
+        // Atmosphere halo
         const atmosGeo = new THREE.SphereGeometry(planet.radius * 1.05, 32, 32);
         const atmosMat = new THREE.ShaderMaterial({
           vertexShader: `
@@ -445,7 +441,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         const atmosMesh = new THREE.Mesh(atmosGeo, atmosMat);
         pGroup.add(atmosMesh);
 
-        // Swirling Cloud Sphere
+        // Swirling Clouds
         const cloudTex = new THREE.CanvasTexture(generateCloudTexture());
         const cloudGeo = new THREE.SphereGeometry(planet.radius * 1.018, 36, 32);
         const cloudMat = new THREE.MeshStandardMaterial({
@@ -458,14 +454,14 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         pGroup.add(cloudsMesh);
         cloudsMeshRef.current = cloudsMesh;
 
-        // Earth's Moon
+        // Earth Moon
         const moonGeo = new THREE.SphereGeometry(0.65, 24, 24);
         const moonMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.9 });
         const moonMesh = new THREE.Mesh(moonGeo, moonMat);
         moonMesh.position.set(5.2, 1.2, 0);
         pGroup.add(moonMesh);
 
-        // Earth Hotspot Markers
+        // Hotspot Pins
         const shockwaves: THREE.Mesh[] = [];
         EARTH_HOTSPOTS.forEach((hs) => {
           const pos = latLonToVector3(hs.lat, hs.lon, planet.radius);
@@ -473,14 +469,13 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
 
           const color =
             hs.domain === 'cryosphere'
-              ? 0x38bdf8 // Cyan Ice
+              ? 0x38bdf8
               : hs.domain === 'biosphere'
-              ? 0x22c55e // Green Forest
+              ? 0x22c55e
               : hs.domain === 'hydrosphere'
-              ? 0x3b82f6 // Blue Ocean
-              : 0xef4444; // Red Temp
+              ? 0x3b82f6
+              : 0xef4444;
 
-          // Hotspot 3D Pin (Enlarged and glowing if selected)
           const isSelected = selectedHotspotId === hs.id;
           const pinGeo = new THREE.SphereGeometry(isSelected ? 0.22 : 0.14, 12, 12);
           const pinMat = new THREE.MeshBasicMaterial({ color: isSelected ? 0xffffff : color });
@@ -489,7 +484,6 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
           pin.userData = { isHotspot: true, data: hs };
           pGroup.add(pin);
 
-          // Pulsing Ring
           const ringGeo = new THREE.RingGeometry(0.12, 0.22, 24);
           const ringMat = new THREE.MeshBasicMaterial({
             color,
@@ -506,7 +500,6 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         });
         shockwavesRef.current = shockwaves;
       } else {
-        // Other Planets
         const pGeo = new THREE.SphereGeometry(planet.radius, 32, 24);
         const pMat = new THREE.MeshStandardMaterial({
           color: planet.color,
@@ -517,7 +510,6 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         pMesh.userData = { isPlanet: true, data: planet };
         pGroup.add(pMesh);
 
-        // Saturn Rings
         if (planet.hasRings && planet.ringInnerRadius && planet.ringOuterRadius) {
           const rGeo = new THREE.RingGeometry(planet.ringInnerRadius, planet.ringOuterRadius, 48);
           const rMat = new THREE.MeshStandardMaterial({
@@ -539,13 +531,10 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       });
     });
 
-    // 6. 3D Asteroid Belt (Between Mars at dist 44 and Jupiter at dist 68)
+    // 6. Asteroid Belt
     const asteroidCount = 2000;
     const astGeo = new THREE.DodecahedronGeometry(0.28, 0);
-    const astMat = new THREE.MeshStandardMaterial({
-      color: 0x78716c,
-      roughness: 0.9,
-    });
+    const astMat = new THREE.MeshStandardMaterial({ color: 0x78716c, roughness: 0.9 });
     const asteroidInstanced = new THREE.InstancedMesh(astGeo, astMat, asteroidCount);
     const dummy = new THREE.Object3D();
 
@@ -563,34 +552,30 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
     asteroidInstanced.instanceMatrix.needsUpdate = true;
     scene.add(asteroidInstanced);
 
-    // 7. Earth Interior 3D Structure Cutaway
+    // 7. Earth Interior Cutaway
     const structureGroup = new THREE.Group();
     structureGroup.visible = false;
     scene.add(structureGroup);
     structureGroupRef.current = structureGroup;
 
     const earthR = 2.4;
-    // Crust
     const crustGeo = new THREE.SphereGeometry(earthR, 36, 24, 0, Math.PI * 1.5);
     const crustMat = new THREE.MeshStandardMaterial({ color: 0x166534, side: THREE.DoubleSide });
     structureGroup.add(new THREE.Mesh(crustGeo, crustMat));
 
-    // Mantle
     const mantleGeo = new THREE.SphereGeometry(earthR * 0.82, 32, 24, 0, Math.PI * 1.5);
     const mantleMat = new THREE.MeshStandardMaterial({ color: 0xc2410c, side: THREE.DoubleSide });
     structureGroup.add(new THREE.Mesh(mantleGeo, mantleMat));
 
-    // Outer Liquid Core
     const outerCoreGeo = new THREE.SphereGeometry(earthR * 0.52, 24, 20, 0, Math.PI * 1.5);
     const outerCoreMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, side: THREE.DoubleSide });
     structureGroup.add(new THREE.Mesh(outerCoreGeo, outerCoreMat));
 
-    // Inner Solid Core
     const innerCoreGeo = new THREE.SphereGeometry(earthR * 0.24, 20, 20);
     const innerCoreMat = new THREE.MeshBasicMaterial({ color: 0xfef08a });
     structureGroup.add(new THREE.Mesh(innerCoreGeo, innerCoreMat));
 
-    // 8. Raycasting & Interaction
+    // 8. User Mouse Orbit & Drag Controls
     let isDragging = false;
     let prevMouse = { x: 0, y: 0 };
     const raycaster = new THREE.Raycaster();
@@ -607,22 +592,22 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
 
       if (isDragging) {
+        // User is taking manual control: cancel any active camera fly-to animation!
+        orbitStateRef.current.isTransitioning = false;
+
         const dx = e.clientX - prevMouse.x;
         const dy = e.clientY - prevMouse.y;
 
-        if (viewMode === 'solar_system') {
-          // Orbit whole solar system view
-          scene.rotation.y += dx * 0.003;
-          camera.position.y = Math.min(140, Math.max(10, camera.position.y - dy * 0.2));
-        } else if (earthRefObj) {
-          // Spin Earth
-          earthRefObj.rotation.y += dx * 0.008;
-          earthRefObj.rotation.x += dy * 0.008;
-        }
+        // Smooth spherical angle rotation
+        orbitStateRef.current.theta -= dx * 0.005;
+        orbitStateRef.current.phi = Math.min(
+          Math.PI * 0.48,
+          Math.max(0.08, orbitStateRef.current.phi - dy * 0.005)
+        );
 
         prevMouse = { x: e.clientX, y: e.clientY };
       } else {
-        // Hover Raycast
+        // Hover Detection
         raycaster.setFromCamera(mouse, camera);
         const intersects = raycaster.intersectObjects(scene.children, true);
         let foundHover = false;
@@ -666,9 +651,18 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       }
     };
 
+    // User Mouse Wheel Zoom (Completely under user control)
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      camera.position.z = Math.min(300, Math.max(12, camera.position.z + e.deltaY * 0.12));
+      orbitStateRef.current.isTransitioning = false; // User took control!
+
+      const zoomSpeed = orbitStateRef.current.radius * 0.0016;
+      const minR = viewMode === 'solar_system' ? 25 : 5;
+      const maxR = viewMode === 'solar_system' ? 420 : 55;
+      const newR = orbitStateRef.current.radius + e.deltaY * zoomSpeed;
+
+      orbitStateRef.current.radius = Math.min(maxR, Math.max(minR, newR));
+      orbitStateRef.current.targetRadius = orbitStateRef.current.radius;
     };
 
     container.addEventListener('mousedown', handleMouseDown);
@@ -684,38 +678,60 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       animId = requestAnimationFrame(animate);
       const delta = clock.getDelta();
 
-      // Camera Smooth Lerp to Target Position
-      camera.position.lerp(targetCamPosRef.current, 0.04);
+      // If transitioning (e.g. fly-to mode), smoothly damp towards target values
+      const st = orbitStateRef.current;
+      if (st.isTransitioning) {
+        st.radius += (st.targetRadius - st.radius) * 0.06;
+        st.phi += (st.targetPhi - st.phi) * 0.06;
+        st.target.lerp(st.targetLookAt, 0.06);
+
+        if (Math.abs(st.radius - st.targetRadius) < 0.25 && st.target.distanceTo(st.targetLookAt) < 0.2) {
+          st.isTransitioning = false;
+        }
+      } else if (autoRotate && !isDragging) {
+        st.theta += 0.001; // Gentle ambient orbital spin
+      }
+
+      // Compute camera position from spherical coordinates around target
+      const r = st.radius;
+      const p = st.phi;
+      const t = st.theta;
+      const cx = st.target.x + r * Math.sin(p) * Math.sin(t);
+      const cy = st.target.y + r * Math.cos(p);
+      const cz = st.target.z + r * Math.sin(p) * Math.cos(t);
+
+      camera.position.set(cx, cy, cz);
+      camera.lookAt(st.target);
 
       // Rotate Sun
       sunMesh.rotation.y += 0.002;
 
-      // Orbit Planets around Sun (when in solar system view)
-      animatedPlanets.forEach((p) => {
+      // Orbit Planets
+      animatedPlanets.forEach((pl) => {
         if (autoRotate && viewMode === 'solar_system') {
-          p.angle += p.data.orbitSpeed * delta * 0.8;
-          p.mesh.position.x = Math.cos(p.angle) * p.data.orbitDistance;
-          p.mesh.position.z = Math.sin(p.angle) * p.data.orbitDistance;
+          pl.angle += pl.data.orbitSpeed * delta * 0.7;
+          pl.mesh.position.x = Math.cos(pl.angle) * pl.data.orbitDistance;
+          pl.mesh.position.z = Math.sin(pl.angle) * pl.data.orbitDistance;
         }
-        p.mesh.rotation.y += p.data.rotationSpeed;
+        pl.mesh.rotation.y += pl.data.rotationSpeed;
       });
 
-      // Animate Clouds slightly faster than Earth rotation
+      // Animate Clouds
       if (cloudsMeshRef.current) {
         cloudsMeshRef.current.rotation.y += 0.0006;
       }
 
-      // Animate Asteroid Belt slow orbit
+      // Animate Asteroid Belt
       asteroidInstanced.rotation.y += 0.0004;
 
-      // Animate Hotspot Shockwaves
+      // Animate Shockwaves
       shockwavesRef.current.forEach((sw) => {
         sw.userData.progress = (sw.userData.progress + delta * 0.8) % 1.0;
-        const p = sw.userData.progress;
-        const s = 1 + p * (sw.userData.maxScale - 1);
+        const prog = sw.userData.progress;
+        const s = 1 + prog * (sw.userData.maxScale - 1);
         sw.scale.set(s, s, 1);
         if (sw.material instanceof THREE.MeshBasicMaterial) {
-          sw.material.opacity = Math.max(0, 0.9 * (1 - p));
+          sw.material.opacity = Math.max(0, 0.9 * (1 - prog));
         }
       });
 
@@ -745,9 +761,9 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
     };
-  }, [onSelectPlanet, onSelectHotspot, currentYear, viewMode, autoRotate]);
+  }, [onSelectPlanet, onSelectHotspot, currentYear, viewMode, autoRotate, selectedHotspotId]);
 
-  // Sync Structure Mode Visibility
+  // Sync Structure Mode
   useEffect(() => {
     if (structureGroupRef.current && earthGroupRef.current) {
       if (viewMode === 'structure') {
@@ -763,7 +779,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
 
   return (
     <div className="relative w-full h-full select-none overflow-hidden bg-slate-950">
-      {/* 3D WebGL Canvas Mount */}
+      {/* 3D WebGL Canvas */}
       <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
 
       {/* Floating 3D Hover Tooltip */}
@@ -794,8 +810,27 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         </span>
       </div>
 
-      {/* Quick View Controls Floating Pill */}
+      {/* Manual Zoom & Navigation Dock */}
       <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2">
+        {/* Zoom In */}
+        <button
+          onClick={() => handleZoom(0.8)}
+          className="p-2 rounded-xl bg-slate-950/80 backdrop-blur-md border border-slate-800 text-slate-300 hover:text-white hover:border-cyan-500/50 transition-all shadow-lg"
+          title="Zoom In"
+        >
+          <ZoomIn className="w-4 h-4" />
+        </button>
+
+        {/* Zoom Out */}
+        <button
+          onClick={() => handleZoom(1.25)}
+          className="p-2 rounded-xl bg-slate-950/80 backdrop-blur-md border border-slate-800 text-slate-300 hover:text-white hover:border-cyan-500/50 transition-all shadow-lg"
+          title="Zoom Out"
+        >
+          <ZoomOut className="w-4 h-4" />
+        </button>
+
+        {/* Orbit Toggle */}
         <button
           onClick={() => {
             soundManager.playClick();
@@ -812,6 +847,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
           <span>Orbit: {autoRotate ? 'ON' : 'OFF'}</span>
         </button>
 
+        {/* Grid Toggle */}
         <button
           onClick={() => {
             soundManager.playClick();

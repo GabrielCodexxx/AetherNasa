@@ -22,7 +22,7 @@ const DetectiveLogModal = lazy(() => import('./components/DetectiveLogModal'));
 export function App() {
   // Navigation & View Mode
   const [viewMode, setViewMode] = useState<SystemViewMode>('solar_system');
-  const [selectedPlanetId, setSelectedPlanetId] = useState<string>('earth');
+  const [selectedPlanetId, setSelectedPlanetId] = useState<string>('sun');
   const [selectedTrendId, setSelectedTrendId] = useState<string>(EARTH_SYSTEM_TRENDS[0].id);
   const [selectedHotspot, setSelectedHotspot] = useState<HotspotMarker | null>(null);
 
