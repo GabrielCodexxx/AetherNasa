@@ -1,11 +1,21 @@
 export type SystemViewMode =
   | 'solar_system'
+  | 'planet_focus'
   | 'earth_focus'
   | 'structure'
   | 'scenarios'
-  | 'satellites';
+  | 'night_sky';
 
 export type PlanetType = 'star' | 'rocky' | 'gas_giant' | 'ice_giant';
+
+export interface PlanetLayer {
+  name: string;
+  subtitle: string;
+  description: string;
+  composition: string;
+  color: string;
+  thicknessRadius: number; // Relative radius of this layer (e.g. core 0.25, mantle 0.8, crust 1.0)
+}
 
 export interface PlanetData {
   id: string;
@@ -15,6 +25,7 @@ export interface PlanetData {
   orbitDistance: number;
   orbitSpeed: number;
   rotationSpeed: number;
+  initialAngle: number; // Starting non-aligned orbital angle in radians
   color: string;
   emissive?: string;
   hasRings?: boolean;
@@ -25,6 +36,10 @@ export interface PlanetData {
   dayLength: string;
   yearLength: string;
   moonsCount: number;
+  gravity: string;
+  mass: string;
+  atmosphere: string;
+  layers: PlanetLayer[];
 }
 
 export type EarthTrendDomain =
