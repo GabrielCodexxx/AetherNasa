@@ -23,12 +23,30 @@ Unlike Earth quakes, which extinguish in 30–60 seconds due to water damping in
 
 ## 🚀 Key Features
 
-### 1. Interactive 3D Lunar Globe (`ThreeMoonGlobe.tsx`)
-- **Authentic Planetary Topography**: Procedural lunar canvas texture rendering major basaltic maria (*Oceanus Procellarum, Mare Crisium*), heavily cratered highlands (*Descartes*), and bright impact rays (*Copernicus*).
-- **Apollo Station Beacons**: Interactive pyramids marking Apollo 12, 14, 15, and 16 landing sites with coordinates and sensor specs.
-- **Wavefront Propagation Waves**: Dynamic pulsating expanding concentric wave rings radiating across the lunar sphere from epicenters.
-- **Raycasting Interaction**: Click or hover any moonquake marker or Apollo station to orbit the camera and inspect telemetry.
-- **Visual Controls**: Auto-rotation toggle and High-Contrast night vision mode for mission control readability.
+### 1. Full-Screen 3D Planetarium & Globe (`ThreeMoonGlobe.tsx`)
+- **Immersive Full-Screen Universe**: Edge-to-edge 3D space viewport featuring a 2,500-star multi-temperature celestial field, distant Earthrise halo, and celestial equator & meridian coordinate grid.
+- **Photorealistic Lunar Topography**: Procedural 2048x1024 diffuse and bump-mapped terrain rendering basaltic maria (*Oceanus Procellarum, Mare Crisium*), cratered highlands (*Descartes*), and bright ray ejecta radiating from *Copernicus* and *Tycho*.
+- **Atmospheric Limb Glow**: Custom Fresnel / Rayleigh scattering rim glow shader.
+- **3D Structure Cutaway Mode**: Interactive concentric cross-section revealing the Moon's interior layers:
+  - *Brittle Crust* (0–60 km)
+  - *Rigid Lithospheric Mantle* (60–1000 km) with deep moonquake foci plotted at their true 800 km depth!
+  - *Asthenosphere / Partial Melt* (1000–1400 km)
+  - *Metallic Solid Iron Core* (center glowing sphere)
+- **Apollo Station Towers**: 3D holographic laser beacons marking Apollo 12, 14, 15, and 16 surface seismometers.
+- **Animated Shockwave Wavefronts**: Dynamic concentric pulsating rings radiating across the lunar surface from epicenters.
+
+### 2. Chronological Timeline Scrubber (`TimelineScrubber.tsx`)
+- Interactive playback bar spanning the entire Apollo Passive Seismic era (1969 to 1977).
+- Play / Pause with speed multipliers (1x, 2x, 5x) to watch moonquakes trigger chronologically with sound effects.
+- Direct slider scrubber and historical jump controls.
+
+### 3. Interactive Scenario Walkthrough (`ScenarioWalkthrough.tsx`)
+- Step-by-step educational guide explaining lunar seismology:
+  1. *The Great Lunar Quake of 1972* ($M_L 5.5$ global crust shrinkage)
+  2. *The Apollo 13 Rocket Crash* (NASA 14-ton S-IVB calibration collision, 3.3-hour ringing)
+  3. *Deep Tidal Stresses* (Earth's gravity stretching the mantle at 800 km depth)
+  4. *Artemis Base Camp Seismic Hazard* (Active lobate scarps near South Pole Shackleton Crater)
+- Auto-focus camera flies to each location, activates the 3D cutaway or surface view, and triggers acoustic sonification!
 
 ### 2. Live Seismograph & Sonification (`SeismographVisualizer.tsx`)
 - **Animated Canvas Seismogram**: Real-time rendering of authentic Apollo decaying waveform traces.
