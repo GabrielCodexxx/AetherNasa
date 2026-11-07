@@ -1,9 +1,9 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
-import type { PlanetData, HotspotMarker, SystemViewMode } from '../types/earthSystem';
-import { SOLAR_PLANETS, EARTH_HOTSPOTS } from '../utils/earthSystemData';
+import type { PlanetData, HotspotMarker, SystemViewMode, NasaSatelliteMission } from '../types/earthSystem';
+import { SOLAR_PLANETS, EARTH_HOTSPOTS, NASA_FLEET } from '../utils/earthSystemData';
 import { soundManager } from '../utils/soundEffects';
-import { RotateCw, Grid, Globe, ZoomIn, ZoomOut } from 'lucide-react';
+import { RotateCw, Grid, Globe, ZoomIn, ZoomOut, Layers } from 'lucide-react';
 
 interface ThreeSpaceSystemProps {
   viewMode: SystemViewMode;
@@ -12,6 +12,7 @@ interface ThreeSpaceSystemProps {
   currentYear: number;
   onSelectPlanet: (planet: PlanetData) => void;
   onSelectHotspot: (hotspot: HotspotMarker) => void;
+  onSelectSatellite?: (satellite: NasaSatelliteMission) => void;
 }
 
 // Convert Lat/Lon to 3D Cartesian coordinates on a sphere of given radius
@@ -24,6 +25,45 @@ function latLonToVector3(lat: number, lon: number, radius: number): THREE.Vector
   const y = radius * Math.cos(phi);
 
   return new THREE.Vector3(x, y, z);
+}
+
+// Procedural Dual-Pole Regional Divergence Heatmap (NASA Challenge)
+function generateDivergenceTexture(): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d')!;
+  ctx.clearRect(0, 0, 512, 256);
+
+  // 1. Arctic Tundra Greening Zone (>65°N, top latitude strip)
+  const arcticGrad = ctx.createLinearGradient(0, 0, 0, 60);
+  arcticGrad.addColorStop(0, 'rgba(21, 128, 61, 0.85)');
+  arcticGrad.addColorStop(0.65, 'rgba(34, 197, 94, 0.45)');
+  arcticGrad.addColorStop(1, 'rgba(21, 128, 61, 0)');
+  ctx.fillStyle = arcticGrad;
+  ctx.fillRect(0, 0, 512, 60);
+
+  // 2. Amazon Canopy Browning Hotspot (-10°S to +5°N, -70°W)
+  const amazonGrad = ctx.createRadialGradient(156, 132, 4, 156, 132, 48);
+  amazonGrad.addColorStop(0, 'rgba(220, 38, 38, 0.9)');
+  amazonGrad.addColorStop(0.5, 'rgba(249, 115, 22, 0.55)');
+  amazonGrad.addColorStop(1, 'rgba(220, 38, 38, 0)');
+  ctx.fillStyle = amazonGrad;
+  ctx.beginPath();
+  ctx.arc(156, 132, 48, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 3. West Antarctic Grounding Line Retreat (Thwaites: -75°S, -106°W)
+  const antarcticGrad = ctx.createRadialGradient(105, 234, 5, 105, 234, 45);
+  antarcticGrad.addColorStop(0, 'rgba(2, 132, 199, 0.85)');
+  antarcticGrad.addColorStop(0.6, 'rgba(56, 189, 248, 0.4)');
+  antarcticGrad.addColorStop(1, 'rgba(2, 132, 199, 0)');
+  ctx.fillStyle = antarcticGrad;
+  ctx.beginPath();
+  ctx.arc(105, 234, 45, 0, Math.PI * 2);
+  ctx.fill();
+
+  return canvas;
 }
 
 // Procedural Photorealistic Planet Texture Generators (Canvas-Based)
@@ -382,10 +422,12 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
   currentYear,
   onSelectPlanet,
   onSelectHotspot,
+  onSelectSatellite,
 }) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [autoRotate, setAutoRotate] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
+  const [showDivergenceLens, setShowDivergenceLens] = useState(false);
   const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
 
   // Spherical Orbit & Camera Controller
@@ -408,6 +450,8 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
   const structureGroupRef = useRef<THREE.Group | null>(null);
   const buildStructureRef = useRef<((planet: PlanetData) => void) | null>(null);
   const cloudsMeshRef = useRef<THREE.Mesh | null>(null);
+  const divergenceMeshRef = useRef<THREE.Mesh | null>(null);
+  const animatedSatellitesRef = useRef<any[]>([]);
 
   // Projected 3D Callout Badges for Structure Cutaway (matching User's Image 3)
   interface StructureCallout {
@@ -723,6 +767,73 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         moonMesh.position.set(5.2, 1.2, 0);
         pGroup.add(moonMesh);
 
+        // Feature 2: Dual-Pole Regional Divergence Heatmap Mesh (NASA Challenge)
+        const divTex = new THREE.CanvasTexture(generateDivergenceTexture());
+        const divGeo = new THREE.SphereGeometry(planet.radius * 1.012, 36, 32);
+        const divMat = new THREE.MeshBasicMaterial({
+          map: divTex,
+          transparent: true,
+          opacity: 0.85,
+          blending: THREE.AdditiveBlending,
+        });
+        const divMesh = new THREE.Mesh(divGeo, divMat);
+        divMesh.visible = showDivergenceLens;
+        pGroup.add(divMesh);
+        divergenceMeshRef.current = divMesh;
+
+        // Feature 3: Live NASA Earth Observing Satellites Constellation (3D Orbits)
+        const satellites: any[] = [];
+        NASA_FLEET.forEach((sat, sIdx) => {
+          const satOrbitR = planet.radius * (1.28 + sIdx * 0.16);
+          const incX = sIdx * 0.42 + 0.35;
+          const incZ = sIdx * 0.28;
+
+          // Orbit Path Ring
+          const ringGeo = new THREE.BufferGeometry();
+          const ringPts: THREE.Vector3[] = [];
+          for (let a = 0; a <= 64; a++) {
+            const th = (a / 64) * Math.PI * 2;
+            const p = new THREE.Vector3(Math.cos(th) * satOrbitR, 0, Math.sin(th) * satOrbitR);
+            p.applyAxisAngle(new THREE.Vector3(1, 0, 0), incX);
+            p.applyAxisAngle(new THREE.Vector3(0, 0, 1), incZ);
+            ringPts.push(p);
+          }
+          ringGeo.setFromPoints(ringPts);
+          const ringMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.32 });
+          const orbitLine = new THREE.Line(ringGeo, ringMat);
+          pGroup.add(orbitLine);
+
+          // Satellite Model
+          const satGroup = new THREE.Group();
+          const bodyGeo = new THREE.BoxGeometry(0.12, 0.12, 0.22);
+          const bodyMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.25, metalness: 0.8 });
+          const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+          satGroup.add(bodyMesh);
+
+          const wingGeo = new THREE.BoxGeometry(0.48, 0.02, 0.14);
+          const wingMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.2, metalness: 0.6 });
+          const wingMesh = new THREE.Mesh(wingGeo, wingMat);
+          satGroup.add(wingMesh);
+
+          bodyMesh.userData = { isSatellite: true, data: sat };
+          wingMesh.userData = { isSatellite: true, data: sat };
+          satGroup.userData = { isSatellite: true, data: sat };
+
+          pGroup.add(satGroup);
+          pickableTargets.push(bodyMesh);
+
+          satellites.push({
+            mesh: satGroup,
+            dist: satOrbitR,
+            speed: 0.3 + (5 - sIdx) * 0.08,
+            angle: sIdx * 1.3,
+            incX,
+            incZ,
+            data: sat,
+          });
+        });
+        animatedSatellitesRef.current = satellites;
+
         // Hotspot Telemetry Needles on Earth (Clean Architectural Beacons - NO DOTS)
         EARTH_HOTSPOTS.forEach((hs) => {
           const pos = latLonToVector3(hs.lat, hs.lon, planet.radius);
@@ -954,7 +1065,12 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
           const intersects = raycaster.intersectObjects(pickableTargets, false);
           let foundHover = false;
           for (const hit of intersects) {
-            if (hit.object.userData?.isHotspot) {
+            if (hit.object.userData?.isSatellite) {
+              setHoveredLabel(`🛰️ ${hit.object.userData.data.name} • ${hit.object.userData.data.orbitAltitudeKm} km Orbit`);
+              container.style.cursor = 'pointer';
+              foundHover = true;
+              break;
+            } else if (hit.object.userData?.isHotspot) {
               setHoveredLabel(hit.object.userData.data.name);
               container.style.cursor = 'pointer';
               foundHover = true;
@@ -983,7 +1099,13 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         raycaster.setFromCamera(mouse, camera);
         const intersects = raycaster.intersectObjects(pickableTargets, false);
         for (const hit of intersects) {
-          if (hit.object.userData?.isHotspot) {
+          if (hit.object.userData?.isSatellite) {
+            soundManager.playClick();
+            if (onSelectSatellite) {
+              onSelectSatellite(hit.object.userData.data);
+            }
+            return;
+          } else if (hit.object.userData?.isHotspot) {
             soundManager.playClick();
             onSelectHotspot(hit.object.userData.data);
             return;
@@ -1063,6 +1185,16 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
       if (cloudsMeshRef.current) {
         cloudsMeshRef.current.rotation.y += 0.0006;
       }
+
+      // Feature 3: Orbit NASA Fleet Satellites around Earth in 3D
+      animatedSatellitesRef.current.forEach((sat) => {
+        sat.angle += sat.speed * delta * 0.45;
+        const pos = new THREE.Vector3(Math.cos(sat.angle) * sat.dist, 0, Math.sin(sat.angle) * sat.dist);
+        pos.applyAxisAngle(new THREE.Vector3(1, 0, 0), sat.incX);
+        pos.applyAxisAngle(new THREE.Vector3(0, 0, 1), sat.incZ);
+        sat.mesh.position.copy(pos);
+        sat.mesh.lookAt(new THREE.Vector3(0, 0, 0));
+      });
 
       // Animate Asteroid Belt
       asteroidInstanced.rotation.y += 0.0004;
@@ -1295,6 +1427,27 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         >
           <Grid className="w-3.5 h-3.5" />
           <span>Grid</span>
+        </button>
+
+        {/* Feature 2: 3D Dual-Pole Regional Divergence Heatmap */}
+        <button
+          onClick={() => {
+            soundManager.playClick();
+            const next = !showDivergenceLens;
+            setShowDivergenceLens(next);
+            if (divergenceMeshRef.current) {
+              divergenceMeshRef.current.visible = next;
+            }
+          }}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-orbitron font-bold transition-all ${
+            showDivergenceLens
+              ? 'bg-emerald-50 text-[#15803D] border border-emerald-300 shadow-xs'
+              : 'bg-slate-50 text-slate-600 border border-slate-200/80 hover:text-slate-900'
+          }`}
+          title="Toggle Dual-Pole Regional Divergence 3D Heatmap"
+        >
+          <Layers className="w-3.5 h-3.5" />
+          <span>Divergence Lens: {showDivergenceLens ? 'ON' : 'OFF'}</span>
         </button>
       </div>
     </div>

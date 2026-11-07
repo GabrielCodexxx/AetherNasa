@@ -5,6 +5,8 @@ import {
   Volume2,
   VolumeX,
   Database,
+  Compass,
+  FileText,
 } from 'lucide-react';
 import aetherLogo from '../assets/images/logo/AetherLogo.jpg';
 import { soundManager } from '../utils/soundEffects';
@@ -19,6 +21,8 @@ interface EarthSystemHeaderProps {
   onOpenBriefing: () => void;
   onOpenLogbook: () => void;
   onOpenScenarios: () => void;
+  onOpenPlanetology?: () => void;
+  onOpenReport?: () => void;
 }
 
 export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
@@ -27,6 +31,8 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
   onOpenBriefing,
   onOpenLogbook,
   onOpenScenarios,
+  onOpenPlanetology,
+  onOpenReport,
 }) => {
   const [isMuted, setIsMuted] = useState(soundManager.getMuted());
 
@@ -112,10 +118,40 @@ export const EarthSystemHeader: React.FC<EarthSystemHeaderProps> = ({
             <Search className="w-3.5 h-3.5 text-[#0369A1]" />
             <span>Case Files</span>
           </button>
+
+          {/* Feature 5: Comparative Planetology Lab */}
+          {onOpenPlanetology && (
+            <button
+              onClick={() => {
+                soundManager.playClick();
+                onOpenPlanetology();
+              }}
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-orbitron font-bold uppercase bg-slate-50 hover:bg-amber-50 text-slate-700 hover:text-amber-800 border border-slate-200 hover:border-amber-300 transition-all shadow-xs"
+              title="Compare Earth vs Venus vs Mars"
+            >
+              <Compass className="w-3.5 h-3.5 text-amber-600" />
+              <span>Planetology</span>
+            </button>
+          )}
         </div>
 
         {/* Top-Right Mission Control Utility HUD */}
         <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2 bg-white/85 backdrop-blur-xl border border-white/90 rounded-2xl p-1.5 sm:p-2 shadow-xl shadow-slate-200/50">
+          {/* Feature 7: Official Technical Memo Report */}
+          {onOpenReport && (
+            <button
+              onClick={() => {
+                soundManager.playClick();
+                onOpenReport();
+              }}
+              className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-orbitron font-semibold bg-slate-50 hover:bg-sky-50 text-slate-700 hover:text-[#0369A1] border border-slate-200 hover:border-sky-300 transition-all shadow-xs"
+              title="Generate Official NASA Technical Briefing Memo"
+            >
+              <FileText className="w-3.5 h-3.5 text-[#0369A1]" />
+              <span>Memo</span>
+            </button>
+          )}
+
           {/* Sound / Sonification Toggle */}
           <button
             onClick={toggleSound}

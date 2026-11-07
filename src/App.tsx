@@ -22,6 +22,8 @@ import type {
 // Code-split modals
 const EarthScienceModal = lazy(() => import('./components/EarthScienceModal'));
 const DetectiveLogModal = lazy(() => import('./components/DetectiveLogModal'));
+const ComparativePlanetologyModal = lazy(() => import('./components/ComparativePlanetologyModal'));
+const ForensicReportModal = lazy(() => import('./components/ForensicReportModal'));
 
 export function App() {
   // Navigation & View Mode
@@ -38,6 +40,8 @@ export function App() {
   const [showBriefing, setShowBriefing] = useState<boolean>(false);
   const [showLogbook, setShowLogbook] = useState<boolean>(false);
   const [showScenarios, setShowScenarios] = useState<boolean>(false);
+  const [showPlanetology, setShowPlanetology] = useState<boolean>(false);
+  const [showReportModal, setShowReportModal] = useState<boolean>(false);
   const [isPlanetHudOpen, setIsPlanetHudOpen] = useState<boolean>(false);
 
   // Active planet & trend
@@ -111,6 +115,7 @@ export function App() {
           currentYear={currentYear}
           onSelectPlanet={handleSelectPlanet}
           onSelectHotspot={handleSelectHotspot}
+          onSelectSatellite={() => setShowBriefing(true)}
         />
       </div>
 
@@ -128,6 +133,8 @@ export function App() {
         onOpenBriefing={() => setShowBriefing(true)}
         onOpenLogbook={() => setShowLogbook(true)}
         onOpenScenarios={() => setShowScenarios(true)}
+        onOpenPlanetology={() => setShowPlanetology(true)}
+        onOpenReport={() => setShowReportModal(true)}
       />
 
       {/* 3. Left Planetary Intelligence & Structure Dossier (Appears upon clicking planet) */}
@@ -173,6 +180,7 @@ export function App() {
             currentYear={currentYear}
             onClearHotspot={() => setSelectedHotspot(null)}
             onOpenEncyclopedia={() => setShowBriefing(true)}
+            onOpenReportModal={() => setShowReportModal(true)}
           />
         </div>
       )}
@@ -213,6 +221,25 @@ export function App() {
             isOpen={showLogbook}
             onClose={() => setShowLogbook(false)}
             selectedTrend={currentTrend}
+            currentYear={currentYear}
+          />
+        )}
+        {showPlanetology && (
+          <ComparativePlanetologyModal
+            isOpen={showPlanetology}
+            onClose={() => setShowPlanetology(false)}
+            onSelectPlanet={(planetId) => {
+              setSelectedPlanetId(planetId);
+              setViewMode(planetId === 'earth' ? 'earth_focus' : 'planet_focus');
+            }}
+          />
+        )}
+        {showReportModal && (
+          <ForensicReportModal
+            isOpen={showReportModal}
+            onClose={() => setShowReportModal(false)}
+            trend={currentTrend}
+            selectedHotspot={selectedHotspot}
             currentYear={currentYear}
           />
         )}
