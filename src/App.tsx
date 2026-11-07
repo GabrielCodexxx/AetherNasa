@@ -1,12 +1,10 @@
 import { useState, lazy, Suspense } from 'react';
-import { Compass } from 'lucide-react';
 import { ThreeSpaceSystem } from './components/ThreeSpaceSystem';
 import { EarthSystemHeader } from './components/EarthSystemHeader';
 import { PlanetHUD } from './components/PlanetHUD';
 import { EarthTrendInspector } from './components/EarthTrendInspector';
 import { EarthTimelineScrubber } from './components/EarthTimelineScrubber';
 import { DetectiveScenariosModal } from './components/DetectiveScenariosModal';
-import { soundManager } from './utils/soundEffects';
 import {
   EARTH_SYSTEM_TRENDS,
   SOLAR_PLANETS,
@@ -116,6 +114,9 @@ export function App() {
           onSelectPlanet={handleSelectPlanet}
           onSelectHotspot={handleSelectHotspot}
           onSelectSatellite={() => setShowBriefing(true)}
+          onTogglePlanetHud={() => setIsPlanetHudOpen(!isPlanetHudOpen)}
+          isPlanetHudOpen={isPlanetHudOpen || isStructureMode}
+          planetName={currentPlanet.name}
         />
       </div>
 
@@ -155,21 +156,6 @@ export function App() {
         onPrevPlanet={handlePrevPlanet}
         onOpenEncyclopedia={() => setShowBriefing(true)}
       />
-
-      {/* Quick Access Planet Dossier Trigger when HUD is closed */}
-      {!isPlanetHudOpen && !isStructureMode && (
-        <button
-          onClick={() => {
-            soundManager.playClick();
-            setIsPlanetHudOpen(true);
-          }}
-          className="absolute top-20 left-4 sm:left-6 z-20 pointer-events-auto px-3 py-2 rounded-2xl bg-white/85 backdrop-blur-xl border border-white/90 shadow-lg shadow-slate-200/50 flex items-center gap-2 text-xs font-orbitron font-bold text-slate-800 hover:text-[#0369A1] hover:bg-sky-50 transition-all"
-          title="Open Planetary Dossier"
-        >
-          <Compass className="w-3.5 h-3.5 text-[#0369A1]" />
-          <span>{currentPlanet.name} Dossier</span>
-        </button>
-      )}
 
       {/* 4. Right Regional Trend Divergence Dossier (No dots) */}
       {!isStructureMode && (

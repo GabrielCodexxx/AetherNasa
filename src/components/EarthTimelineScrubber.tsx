@@ -64,9 +64,9 @@ export const EarthTimelineScrubber: React.FC<EarthTimelineScrubberProps> = ({
   ];
 
   return (
-    <div className="w-full max-w-4xl mx-auto flex flex-col gap-2 select-none font-sans">
+    <div className="w-full max-w-3xl lg:max-w-4xl mx-auto flex flex-col gap-2 select-none font-sans">
       {/* Domain Category Filter Tabs (Glassmorphic Eco-Tracker Light Mode) */}
-      <div className="flex flex-wrap items-center justify-center gap-1.5 p-1.5 rounded-2xl bg-white/75 backdrop-blur-xl border border-white/80 shadow-lg shadow-slate-200/50 mx-auto">
+      <div className="flex flex-wrap items-center justify-center gap-1.5 p-1.5 rounded-2xl bg-white/75 backdrop-blur-xl border border-white/80 shadow-lg shadow-slate-200/50 mx-auto max-w-fit">
         {domains.map((dom) => {
           const isActive = selectedDomain === dom.id;
           return (

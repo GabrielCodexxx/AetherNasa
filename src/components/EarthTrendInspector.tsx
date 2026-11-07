@@ -308,7 +308,10 @@ export const EarthTrendInspector: React.FC<EarthTrendInspectorProps> = ({
   // 1. Hotspot Inspection Mode (when user clicks an architectural needle on 3D globe)
   if (selectedHotspot) {
     return (
-      <div className="w-full lg:w-96 bg-white/90 backdrop-blur-xl border border-slate-200/90 rounded-3xl p-5 shadow-xl shadow-slate-200/60 flex flex-col justify-between text-slate-800 select-none animate-fade-in max-h-[85vh] overflow-y-auto font-sans">
+      <div
+        className="w-full lg:w-96 bg-white/90 backdrop-blur-xl border border-slate-200/90 rounded-3xl p-4 sm:p-5 shadow-xl shadow-slate-200/60 flex flex-col justify-between text-slate-800 select-none animate-fade-in max-h-[calc(100vh-9.5rem)] overflow-y-auto font-sans"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
         <div className="space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-slate-200">
             <span className="px-2.5 py-1 rounded-md text-[10px] font-orbitron font-bold bg-sky-50 text-[#0369A1] border border-sky-200 uppercase flex items-center gap-1.5">
@@ -378,8 +381,11 @@ export const EarthTrendInspector: React.FC<EarthTrendInspectorProps> = ({
 
   // 2. Main Earth Trend Terminal
   return (
-    <div className="w-full lg:w-96 bg-white/90 backdrop-blur-xl border border-slate-200/90 rounded-3xl p-5 shadow-xl shadow-slate-200/60 flex flex-col justify-between text-slate-800 select-none animate-fade-in max-h-[85vh] overflow-y-auto font-sans">
-      <div className="space-y-4">
+    <div
+      className="w-full lg:w-96 bg-white/90 backdrop-blur-xl border border-slate-200/90 rounded-3xl p-4 sm:p-5 shadow-xl shadow-slate-200/60 flex flex-col justify-between text-slate-800 select-none animate-fade-in max-h-[calc(100vh-9.5rem)] overflow-y-auto font-sans"
+      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+    >
+      <div className="space-y-3.5">
         {/* Top 3-Way Mode Switcher: Synthesis | Divergence | Correlation */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-200/80">
           <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-xl border border-slate-200">

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import type { PlanetData, HotspotMarker, SystemViewMode, NasaSatelliteMission } from '../types/earthSystem';
 import { SOLAR_PLANETS, EARTH_HOTSPOTS, NASA_FLEET } from '../utils/earthSystemData';
 import { soundManager } from '../utils/soundEffects';
-import { RotateCw, Grid, Globe, ZoomIn, ZoomOut, Layers } from 'lucide-react';
+import { RotateCw, Grid, Globe, ZoomIn, ZoomOut, Layers, Compass } from 'lucide-react';
 
 interface ThreeSpaceSystemProps {
   viewMode: SystemViewMode;
@@ -13,6 +13,9 @@ interface ThreeSpaceSystemProps {
   onSelectPlanet: (planet: PlanetData) => void;
   onSelectHotspot: (hotspot: HotspotMarker) => void;
   onSelectSatellite?: (satellite: NasaSatelliteMission) => void;
+  onTogglePlanetHud?: () => void;
+  isPlanetHudOpen?: boolean;
+  planetName?: string;
 }
 
 // Convert Lat/Lon to 3D Cartesian coordinates on a sphere of given radius
@@ -307,6 +310,9 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
   onSelectPlanet,
   onSelectHotspot,
   onSelectSatellite,
+  onTogglePlanetHud,
+  isPlanetHudOpen = false,
+  planetName,
 }) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [autoRotate, setAutoRotate] = useState(true);
@@ -1337,11 +1343,32 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
         </div>
       )}
 
-      {/* Manual Zoom & Navigation Dock (Glassmorphic Light Mode) */}
-      <div className="absolute bottom-6 left-6 z-20 flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/80 backdrop-blur-md border border-white/80 shadow-lg shadow-slate-200/50 font-sans">
+      {/* 3D Viewport & Navigation Command Dock (Positioned at Top-Left, Unified with Planet Dossier - Zero Overlap!) */}
+      <div
+        className={`absolute top-20 z-20 flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/85 backdrop-blur-xl border border-white/90 shadow-xl shadow-slate-200/50 transition-all duration-300 font-sans pointer-events-auto ${
+          isPlanetHudOpen ? 'left-3 sm:left-[416px]' : 'left-4 sm:left-6'
+        }`}
+      >
+        {!isPlanetHudOpen && onTogglePlanetHud && (
+          <>
+            <button
+              onClick={() => {
+                soundManager.playClick();
+                onTogglePlanetHud();
+              }}
+              className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-sky-50 text-slate-800 hover:text-[#0369A1] border border-slate-200/90 text-xs font-orbitron font-bold flex items-center gap-1.5 transition-all shadow-xs"
+              title="Open Planetary Dossier"
+            >
+              <Compass className="w-3.5 h-3.5 text-[#0369A1]" />
+              <span>{planetName || 'Planet'} Dossier</span>
+            </button>
+            <div className="w-px h-5 bg-slate-200 mx-0.5" />
+          </>
+        )}
+
         <button
           onClick={() => handleZoom(0.8)}
-          className="p-2 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 hover:text-[#0369A1] hover:bg-sky-50 transition-all shadow-xs"
+          className="p-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 hover:text-[#0369A1] hover:bg-sky-50 transition-all shadow-xs"
           title="Zoom In"
         >
           <ZoomIn className="w-4 h-4" />
@@ -1349,7 +1376,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
 
         <button
           onClick={() => handleZoom(1.25)}
-          className="p-2 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 hover:text-[#0369A1] hover:bg-sky-50 transition-all shadow-xs"
+          className="p-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 hover:text-[#0369A1] hover:bg-sky-50 transition-all shadow-xs"
           title="Zoom Out"
         >
           <ZoomOut className="w-4 h-4" />
@@ -1360,7 +1387,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
             soundManager.playClick();
             setAutoRotate(!autoRotate);
           }}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
             autoRotate
               ? 'bg-sky-50 text-[#0369A1] border border-sky-300 shadow-xs'
               : 'bg-slate-50 text-slate-600 border border-slate-200/80 hover:text-slate-900'
@@ -1368,7 +1395,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
           title="Toggle Planetary Orbit Animation"
         >
           <RotateCw className="w-3.5 h-3.5" />
-          <span>Orbit: {autoRotate ? 'ON' : 'OFF'}</span>
+          <span className="hidden sm:inline">Orbit: {autoRotate ? 'ON' : 'OFF'}</span>
         </button>
 
         <button
@@ -1376,7 +1403,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
             soundManager.playClick();
             setShowGrid(!showGrid);
           }}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
             showGrid
               ? 'bg-sky-50 text-[#0369A1] border border-sky-300 shadow-xs'
               : 'bg-slate-50 text-slate-600 border border-slate-200/80 hover:text-slate-900'
@@ -1384,7 +1411,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
           title="Toggle Orbital Plane Coordinates"
         >
           <Grid className="w-3.5 h-3.5" />
-          <span>Grid</span>
+          <span className="hidden sm:inline">Grid</span>
         </button>
 
         {/* Feature 2: 3D Dual-Pole Regional Divergence Heatmap */}
@@ -1397,7 +1424,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
               divergenceMeshRef.current.visible = next;
             }
           }}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-orbitron font-bold transition-all ${
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-orbitron font-bold transition-all ${
             showDivergenceLens
               ? 'bg-emerald-50 text-[#15803D] border border-emerald-300 shadow-xs'
               : 'bg-slate-50 text-slate-600 border border-slate-200/80 hover:text-slate-900'
@@ -1405,7 +1432,7 @@ export const ThreeSpaceSystem: React.FC<ThreeSpaceSystemProps> = ({
           title="Toggle Dual-Pole Regional Divergence 3D Heatmap"
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>Divergence Lens: {showDivergenceLens ? 'ON' : 'OFF'}</span>
+          <span className="hidden sm:inline">Divergence: {showDivergenceLens ? 'ON' : 'OFF'}</span>
         </button>
       </div>
     </div>

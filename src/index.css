@@ -25,20 +25,16 @@
   border: 1px solid rgba(255, 255, 255, 0.65);
 }
 
-/* Custom Scrollbar for Glassmorphic Light Theme */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Completely Hide Scrollbars Globally across all browsers while preserving smooth scrolling */
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
-::-webkit-scrollbar-track {
-  background: rgba(241, 245, 249, 0.6);
-}
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #0369a1;
+
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* Precision Rectangular Telemetry Slider Thumb (No Round Dots) */
