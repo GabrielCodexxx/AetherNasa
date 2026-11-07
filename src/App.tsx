@@ -1,353 +1,305 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Header } from './components/Header';
-import { RoverGrid } from './components/RoverGrid';
-import { CommandPanel } from './components/CommandPanel';
-import { LEVELS } from './utils/levels';
-import type { Coordinate, LevelConfig, TileType } from './types/trainer';
+import { ThreeMoonGlobe } from './components/ThreeMoonGlobe';
+import { SeismographVisualizer } from './components/SeismographVisualizer';
+import { MoonquakeFilterBar } from './components/MoonquakeFilterBar';
+import { MOONQUAKE_CATALOG, APOLLO_STATIONS } from './utils/moonquakeData';
+import type { MoonquakeEvent, ApolloStation, MoonquakeCategory } from './types/moonquake';
 import { soundManager } from './utils/soundEffects';
-import { Lightbulb } from 'lucide-react';
+import {
+  MapPin,
+  Calendar,
+  Volume2,
+  Sparkles,
+} from 'lucide-react';
 
-// Code-split modals
-const TeachersGuideModal = lazy(() => import('./components/TeachersGuideModal'));
-const MissionDebriefModal = lazy(() => import('./components/MissionDebriefModal'));
-const LeaderboardModal = lazy(() => import('./components/LeaderboardModal'));
+// Code-split modals for optimal performance
+const ArtemisScienceModal = lazy(() => import('./components/ArtemisScienceModal'));
+const SeismicLogModal = lazy(() => import('./components/SeismicLogModal'));
 
 export function App() {
-  const [levelIndex, setLevelIndex] = useState(0);
-  const currentLevel: LevelConfig = LEVELS[levelIndex];
+  const [selectedEvent, setSelectedEvent] = useState<MoonquakeEvent | null>(
+    MOONQUAKE_CATALOG[0] // Defaults to the 1972 M 5.5 Great Quake
+  );
+  const [selectedStation, setSelectedStation] = useState<ApolloStation | null>(null);
 
-  // Path drawing state: begins with start tile
-  const [path, setPath] = useState<Coordinate[]>([currentLevel.start]);
-  const [roverPos, setRoverPos] = useState<Coordinate>(currentLevel.start);
-  const [isExecuting, setIsExecuting] = useState(false);
+  // Filters
+  const [selectedCategory, setSelectedCategory] = useState<MoonquakeCategory | 'all'>('all');
+  const [minMagnitude, setMinMagnitude] = useState<number>(1.0);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Floating text feedback (e.g. +2 Solar!)
-  const [floatingText, setFloatingText] = useState<{ coord: Coordinate; text: string; color: string } | null>(null);
+  // Modals
+  const [showBriefing, setShowBriefing] = useState<boolean>(false);
+  const [showLogbook, setShowLogbook] = useState<boolean>(false);
 
-  // Level Results & Modals
-  const [debrief, setDebrief] = useState<{
-    show: boolean;
-    status: 'success' | 'failure';
-    failureReason?: string;
-    finalBattery: number;
-    stars: number;
-  } | null>(null);
-
-  const [showTeachersGuide, setShowTeachersGuide] = useState(false);
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
-  const [totalStarsEarned, setTotalStarsEarned] = useState(0);
-
-  // Reset path when changing levels
-  useEffect(() => {
-    setPath([currentLevel.start]);
-    setRoverPos(currentLevel.start);
-    setIsExecuting(false);
-    setFloatingText(null);
-    setDebrief(null);
-  }, [currentLevel]);
-
-  // Calculate battery & stars in real-time as path is planned
-  const calculatePlannedStats = () => {
-    let battery = currentLevel.maxBattery;
-    let stars = 0;
-    const visitedTiles = new Set<string>();
-
-    for (let i = 1; i < path.length; i++) {
-      const coord = path[i];
-      const key = `${coord.r},${coord.c}`;
-      const tile: TileType = currentLevel.grid[coord.r][coord.c];
-
-      if (tile === 'regolith') {
-        battery -= 2;
-      } else if (tile === 'solar') {
-        battery = Math.min(currentLevel.maxBattery, battery - 1 + 2); // Net +1
-      } else if (tile === 'ice') {
-        battery -= 3;
-        if (!visitedTiles.has(key)) {
-          stars += 1;
-          visitedTiles.add(key);
-        }
-      } else {
-        // Plain basalt or goal
-        battery -= 1;
-      }
+  // Filter events based on active category, magnitude, and search
+  const filteredEvents = MOONQUAKE_CATALOG.filter((ev) => {
+    if (selectedCategory !== 'all' && ev.category !== selectedCategory) return false;
+    if (ev.magnitude < minMagnitude) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      return (
+        ev.name.toLowerCase().includes(q) ||
+        ev.description.toLowerCase().includes(q) ||
+        ev.scienceNote.toLowerCase().includes(q)
+      );
     }
+    return true;
+  });
 
-    return {
-      plannedBattery: battery,
-      plannedStars: stars,
-    };
+  const handleSelectEvent = (event: MoonquakeEvent) => {
+    soundManager.playClick();
+    setSelectedEvent(event);
+    setSelectedStation(null);
   };
 
-  const { plannedBattery, plannedStars } = calculatePlannedStats();
-
-  // Check if rover reached the objective
-  const reachedGoal =
-    path.length > 1 &&
-    path[path.length - 1].r === currentLevel.goal.r &&
-    path[path.length - 1].c === currentLevel.goal.c;
-
-  // Handle clicking tiles to construct/undo route
-  const handleTileClick = (coord: Coordinate) => {
-    if (isExecuting) return;
-
-    // Cannot walk on boulders
-    if (currentLevel.grid[coord.r][coord.c] === 'boulder') {
-      soundManager.playError();
-      return;
-    }
-
-    // Check if clicked tile is already in path
-    const existingIdx = path.findIndex((p) => p.r === coord.r && p.c === coord.c);
-    if (existingIdx !== -1) {
-      if (existingIdx === 0) {
-        // Reset to start
-        soundManager.playUndoTile();
-        setPath([currentLevel.start]);
-      } else {
-        // Backtrack to clicked tile
-        soundManager.playUndoTile();
-        setPath(path.slice(0, existingIdx + 1));
-      }
-      return;
-    }
-
-    // Must be adjacent (orthogonal: Up, Down, Left, Right) to the last tile in path
-    const last = path[path.length - 1];
-    const dr = Math.abs(last.r - coord.r);
-    const dc = Math.abs(last.c - coord.c);
-
-    if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
-      soundManager.playClickTile();
-      setPath([...path, coord]);
-    } else {
-      soundManager.playError();
-    }
-  };
-
-  // Undo step
-  const handleUndo = () => {
-    if (path.length > 1) {
-      soundManager.playUndoTile();
-      setPath(path.slice(0, path.length - 1));
-    }
-  };
-
-  // Clear path
-  const handleClear = () => {
-    soundManager.playUndoTile();
-    setPath([currentLevel.start]);
-  };
-
-  // Transmit command sequence & execute live rover drive
-  const handleTransmit = () => {
-    if (isExecuting || path.length <= 1) return;
-
-    soundManager.playTransmit();
-    setIsExecuting(true);
-
-    let currentStep = 0;
-    let liveBattery = currentLevel.maxBattery;
-    let liveStars = 0;
-    const visitedTiles = new Set<string>();
-
-    const interval = setInterval(() => {
-      currentStep += 1;
-
-      if (currentStep >= path.length) {
-        // Rover reached end of programmed path!
-        clearInterval(interval);
-        setIsExecuting(false);
-
-        const lastPos = path[path.length - 1];
-        const isAtGoal = lastPos.r === currentLevel.goal.r && lastPos.c === currentLevel.goal.c;
-
-        if (isAtGoal && liveBattery >= 0) {
-          setTotalStarsEarned((prev) => prev + liveStars);
-          setDebrief({
-            show: true,
-            status: 'success',
-            finalBattery: liveBattery,
-            stars: liveStars,
-          });
-        } else {
-          setDebrief({
-            show: true,
-            status: 'failure',
-            failureReason: isAtGoal
-              ? 'Rover arrived at the target, but battery died on the final meter!'
-              : 'The programmed sequence ended before reaching the target beacon tile.',
-            finalBattery: liveBattery,
-            stars: liveStars,
-          });
-        }
-        return;
-      }
-
-      // Move rover to next waypoint
-      const coord = path[currentStep];
-      setRoverPos(coord);
-      const tile: TileType = currentLevel.grid[coord.r][coord.c];
-      const key = `${coord.r},${coord.c}`;
-
-      // Calculate cost
-      if (tile === 'regolith') {
-        liveBattery -= 2;
-        soundManager.playRoverStep();
-        setFloatingText({ coord, text: '-2 Sand', color: 'bg-amber-950 text-amber-300 border-amber-600' });
-      } else if (tile === 'solar') {
-        liveBattery = Math.min(currentLevel.maxBattery, liveBattery - 1 + 2);
-        soundManager.playSolarRecharge();
-        setFloatingText({ coord, text: '+2 Solar!', color: 'bg-yellow-950 text-yellow-300 border-yellow-500' });
-      } else if (tile === 'ice') {
-        liveBattery -= 3;
-        if (!visitedTiles.has(key)) {
-          liveStars += 1;
-          visitedTiles.add(key);
-        }
-        soundManager.playIceScan();
-        setFloatingText({ coord, text: '-3 Ice (⭐+1)', color: 'bg-cyan-950 text-cyan-300 border-cyan-400' });
-      } else {
-        liveBattery -= 1;
-        soundManager.playRoverStep();
-        setFloatingText({ coord, text: '-1 Basalt', color: 'bg-slate-900 text-slate-300 border-slate-700' });
-      }
-
-      // Check for mid-route battery depletion!
-      if (liveBattery < 0) {
-        clearInterval(interval);
-        setIsExecuting(false);
-        setDebrief({
-          show: true,
-          status: 'failure',
-          failureReason: `Battery depleted on tile (${coord.r + 1}, ${coord.c + 1}) in ${tile.toUpperCase()}! Wheels stopped with 0 power remaining.`,
-          finalBattery: 0,
-          stars: liveStars,
-        });
-      }
-    }, 450);
-  };
-
-  // Next level handler
-  const handleNextLevel = () => {
-    setDebrief(null);
-    if (levelIndex < LEVELS.length - 1) {
-      setLevelIndex((idx) => idx + 1);
-    }
-  };
-
-  // Retry level handler
-  const handleRetry = () => {
-    setDebrief(null);
-    setPath([currentLevel.start]);
-    setRoverPos(currentLevel.start);
-    setIsExecuting(false);
-    setFloatingText(null);
+  const handleSelectStation = (station: ApolloStation) => {
+    soundManager.playClick();
+    setSelectedStation(station);
   };
 
   return (
-    <div className="min-h-screen bg-[#030712] text-slate-100 flex flex-col bg-radar-grid selection:bg-yellow-500 selection:text-black">
-      {/* Top Header */}
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-slate-950">
+      {/* 1. Global Navigation & Telemetry Header */}
       <Header
-        currentLevelIndex={levelIndex}
-        totalLevels={LEVELS.length}
-        totalStars={totalStarsEarned}
-        onSelectLevel={(idx) => setLevelIndex(idx)}
-        onOpenTeachersGuide={() => setShowTeachersGuide(true)}
-        onOpenLeaderboard={() => setShowLeaderboard(true)}
+        onOpenBriefing={() => setShowBriefing(true)}
+        onOpenLogbook={() => setShowLogbook(true)}
+        totalQuakes={MOONQUAKE_CATALOG.length}
+        filteredCount={filteredEvents.length}
       />
 
-      {/* Main Command Console */}
-      <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 space-y-5">
-        {/* Level Mission Briefing Card */}
-        <div className="bg-slate-950/80 border-2 border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xl backdrop-blur-md space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-2">
-            <h2 className="text-base sm:text-lg font-black text-white font-mono flex items-center gap-2">
-              <span>{currentLevel.name}</span>
-              <span className="text-xs font-normal text-slate-400">({currentLevel.location})</span>
-            </h2>
-            <span className="text-xs font-mono font-bold text-yellow-400 bg-yellow-950/60 border border-yellow-800 px-3 py-1 rounded-full">
-              Battery Limit: {currentLevel.maxBattery} Pts
-            </span>
+      {/* 2. Main Exploration Stage */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col gap-6">
+        {/* Upper Stage: 3D Globe + Event Telemetry Dossier */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[580px]">
+          {/* Left/Center: Interactive Three.js 3D Lunar Globe (8 cols) */}
+          <div className="lg:col-span-8 h-[520px] sm:h-[580px] rounded-3xl overflow-hidden border-2 border-slate-800 shadow-2xl relative bg-slate-950">
+            <ThreeMoonGlobe
+              events={filteredEvents}
+              stations={APOLLO_STATIONS}
+              selectedEventId={selectedEvent ? selectedEvent.id : null}
+              selectedStationId={selectedStation ? selectedStation.id : null}
+              onSelectEvent={handleSelectEvent}
+              onSelectStation={handleSelectStation}
+            />
           </div>
 
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-            {currentLevel.briefing}
-          </p>
+          {/* Right: Selected Event or Station Telemetry Inspector (4 cols) */}
+          <div className="lg:col-span-4 flex flex-col gap-4">
+            {selectedStation ? (
+              /* Selected Station Inspector Card */
+              <div className="bg-slate-900/90 border-2 border-cyan-500/40 rounded-3xl p-6 shadow-xl flex-1 flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-700/60 uppercase flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                      APSE Seismic Station
+                    </span>
+                    <button
+                      onClick={() => setSelectedStation(null)}
+                      className="text-xs font-mono text-slate-400 hover:text-white"
+                    >
+                      Clear
+                    </button>
+                  </div>
 
-          <div className="flex items-center gap-2 text-xs text-cyan-300 pt-1">
-            <Lightbulb className="w-4 h-4 text-amber-400 shrink-0" />
-            <span className="font-mono text-slate-400">NASA Science Fact:</span>
-            <span className="text-slate-300 truncate">{currentLevel.nasaFact}</span>
+                  <div>
+                    <h3 className="text-xl font-bold font-mono text-white">
+                      {selectedStation.name}
+                    </h3>
+                    <p className="text-xs font-mono text-slate-400 mt-1">
+                      Mission: <span className="text-cyan-300 font-bold">{selectedStation.mission}</span>
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs font-mono">
+                    <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800">
+                      <span className="text-slate-500 block text-[10px] uppercase">Coordinates</span>
+                      <span className="text-white font-bold">
+                        {selectedStation.lat.toFixed(2)}°N, {selectedStation.lon.toFixed(2)}°E
+                      </span>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800">
+                      <span className="text-slate-500 block text-[10px] uppercase">Deployed Date</span>
+                      <span className="text-emerald-400 font-bold">{selectedStation.deployedDate}</span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase block mb-1">
+                      Sensor Payload
+                    </span>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      {selectedStation.seismometerType}. Powered continuously for up to 8 years by the SNAP-27 radioisotope thermoelectric generator (RTG).
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-800/80">
+                  <button
+                    onClick={() => {
+                      if (selectedEvent) {
+                        soundManager.sonifyMoonquake(selectedEvent.magnitude, selectedEvent.category);
+                      }
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all"
+                  >
+                    <Volume2 className="w-4 h-4" />
+                    <span>Ping Seismometer Audio</span>
+                  </button>
+                </div>
+              </div>
+            ) : selectedEvent ? (
+              /* Selected Moonquake Telemetry Card */
+              <div className="bg-slate-900/90 border-2 border-slate-800 rounded-3xl p-6 shadow-xl flex-1 flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase border ${
+                        selectedEvent.category === 'shallow'
+                          ? 'bg-red-950 text-red-300 border-red-700/60'
+                          : selectedEvent.category === 'deep'
+                          ? 'bg-purple-950 text-purple-300 border-purple-700/60'
+                          : selectedEvent.category === 'artificial_impact'
+                          ? 'bg-cyan-950 text-cyan-300 border-cyan-700/60'
+                          : 'bg-yellow-950 text-yellow-300 border-yellow-700/60'
+                      }`}
+                    >
+                      {selectedEvent.category.replace('_', ' ')} Quake
+                    </span>
+
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${
+                        selectedEvent.artemisRisk === 'CRITICAL'
+                          ? 'bg-rose-900/70 text-rose-200 border border-rose-600'
+                          : selectedEvent.artemisRisk === 'MODERATE'
+                          ? 'bg-amber-900/70 text-amber-200 border border-amber-600'
+                          : 'bg-emerald-900/70 text-emerald-200 border border-emerald-600'
+                      }`}
+                    >
+                      Artemis Risk: {selectedEvent.artemisRisk}
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-bold font-mono text-white leading-snug">
+                      {selectedEvent.name}
+                    </h3>
+                    <p className="text-xs font-mono text-slate-400 mt-1 flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                      {selectedEvent.dateStr}
+                    </p>
+                  </div>
+
+                  {/* Magnitude & Depth metrics */}
+                  <div className="grid grid-cols-3 gap-2 text-xs font-mono">
+                    <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 text-center">
+                      <span className="text-slate-500 block text-[10px] uppercase">Magnitude</span>
+                      <span className="text-base font-black text-amber-400">
+                        M {selectedEvent.magnitude}
+                      </span>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 text-center">
+                      <span className="text-slate-500 block text-[10px] uppercase">Depth</span>
+                      <span className="text-sm font-bold text-white">
+                        {selectedEvent.depthKm} km
+                      </span>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 text-center">
+                      <span className="text-slate-500 block text-[10px] uppercase">Duration</span>
+                      <span className="text-sm font-bold text-cyan-400">
+                        {selectedEvent.durationMinutes}m
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-xs text-slate-300 leading-relaxed bg-slate-950/50 p-3 rounded-2xl border border-slate-800">
+                    {selectedEvent.description}
+                  </p>
+
+                  {/* Science Note */}
+                  <div className="p-3.5 rounded-2xl bg-indigo-950/30 border border-indigo-800/40 text-xs">
+                    <span className="font-mono font-bold text-indigo-300 uppercase text-[10px] flex items-center gap-1.5 mb-1">
+                      <Sparkles className="w-3 h-3" />
+                      NASA Science Insight
+                    </span>
+                    <p className="text-slate-300 leading-relaxed text-[11px]">
+                      {selectedEvent.scienceNote}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Bottom Action: Sonify Waveform */}
+                <div className="pt-4 border-t border-slate-800 flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      soundManager.sonifyMoonquake(selectedEvent.magnitude, selectedEvent.category);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-mono font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md shadow-cyan-600/20"
+                  >
+                    <Volume2 className="w-4 h-4" />
+                    <span>Play Audio Sonification</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-slate-900/50 border-2 border-dashed border-slate-800 rounded-3xl p-6 flex flex-col items-center justify-center text-center text-slate-500 font-mono text-xs gap-2">
+                <MapPin className="w-8 h-8 text-slate-600" />
+                <p>Click any seismic epicenter marker or Apollo station on the 3D globe to inspect telemetry.</p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Top-Down Interactive Rover Grid */}
-        <RoverGrid
-          level={currentLevel}
-          path={path}
-          currentRoverPos={roverPos}
-          isExecuting={isExecuting}
-          onTileClick={handleTileClick}
-          floatingText={floatingText}
+        {/* 3. Interactive Filter Bar */}
+        <MoonquakeFilterBar
+          events={MOONQUAKE_CATALOG}
+          selectedCategory={selectedCategory}
+          minMagnitude={minMagnitude}
+          searchQuery={searchQuery}
+          selectedEventId={selectedEvent ? selectedEvent.id : null}
+          onSelectCategory={(cat) => {
+            soundManager.playClick();
+            setSelectedCategory(cat);
+          }}
+          onSetMinMagnitude={setMinMagnitude}
+          onSetSearchQuery={setSearchQuery}
+          onSelectEvent={handleSelectEvent}
         />
 
-        {/* Command Panel with Battery Drain Meter & Transmit */}
-        <CommandPanel
-          maxBattery={currentLevel.maxBattery}
-          currentBattery={plannedBattery}
-          pathLength={path.length - 1}
-          collectedStars={plannedStars}
-          targetStars={currentLevel.targetStars}
-          isExecuting={isExecuting}
-          canTransmit={reachedGoal && plannedBattery >= 0}
-          onTransmit={handleTransmit}
-          onClear={handleClear}
-          onUndo={handleUndo}
-        />
+        {/* 4. Real-time Seismograph Waveform & Acoustic Sonifier */}
+        <SeismographVisualizer event={selectedEvent} />
       </main>
 
-      {/* Teacher's Guide Modal */}
-      {showTeachersGuide && (
-        <Suspense fallback={<div />}>
-          <TeachersGuideModal onClose={() => setShowTeachersGuide(false)} />
-        </Suspense>
-      )}
-
-      {/* Mission Debrief Modal (Success or Constructive Failure) */}
-      {debrief?.show && (
-        <Suspense fallback={<div />}>
-          <MissionDebriefModal
-            status={debrief.status}
-            levelName={currentLevel.name}
-            batteryRemaining={debrief.finalBattery}
-            maxBattery={currentLevel.maxBattery}
-            starsCollected={debrief.stars}
-            targetStars={currentLevel.targetStars}
-            failureReason={debrief.failureReason}
-            isLastLevel={levelIndex === LEVELS.length - 1}
-            onNextLevel={handleNextLevel}
-            onRetry={handleRetry}
+      {/* 5. Modals with React.Suspense Code-Splitting */}
+      <Suspense fallback={null}>
+        {showBriefing && (
+          <ArtemisScienceModal
+            isOpen={showBriefing}
+            onClose={() => setShowBriefing(false)}
           />
-        </Suspense>
-      )}
-
-      {/* Leaderboard Modal */}
-      {showLeaderboard && (
-        <Suspense fallback={<div />}>
-          <LeaderboardModal
-            currentScore={{
-              outpostType: 'lunar',
-              survivalTime: (levelIndex + 1) * 120,
-              crisesResolved: totalStarsEarned,
-              stabilityScore: Math.round(((levelIndex + 1) / LEVELS.length) * 100),
-            }}
-            onClose={() => setShowLeaderboard(false)}
+        )}
+        {showLogbook && (
+          <SeismicLogModal
+            isOpen={showLogbook}
+            onClose={() => setShowLogbook(false)}
+            selectedEvent={selectedEvent}
           />
-        </Suspense>
-      )}
+        )}
+      </Suspense>
+
+      {/* 6. Footer & Open Science Attributions */}
+      <footer className="mt-auto border-t border-slate-900 bg-slate-950/80 py-6 px-4 text-center text-xs font-mono text-slate-500">
+        <p className="flex items-center justify-center gap-2">
+          <span>NASA Space Apps Challenge 2026</span>
+          <span>•</span>
+          <span className="text-slate-400">Make a Moonquake Map 2.0</span>
+          <span>•</span>
+          <span>Apollo Passive Seismic Network (APSE)</span>
+        </p>
+      </footer>
     </div>
   );
 }
-
 export default App;
