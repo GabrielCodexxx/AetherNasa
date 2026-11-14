@@ -19,7 +19,7 @@
 
 <br/>
 
-[🚀 **Launch Live Application**](https://aether-nasa.vercel.app) • [📁 **Official Google Drive Submission Folder**](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW) • [📊 **Google Slides (7 Slides)**](https://docs.google.com/presentation/d/1B2-Z6bPb98kSZnAZ7M3P_sJs-tFniLMJwZksukS8UYE/edit) • [📄 **Pitch Deck PDF on Google Drive**](https://drive.google.com/file/d/1NW2awdL8lP6mNeak9VAaWz_lDoNhBAer/view)
+[🚀 **Launch Live Application**](https://aether-nasa.vercel.app) • [📑 **Formal Documentation PDF (Google Drive)**](https://drive.google.com/file/d/15L9ZNJWbEoWV3W8c96wbt8WdH1xY90IS/view) • [📁 **Submission Folder**](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW) • [📊 **Google Slides Deck**](https://docs.google.com/presentation/d/1B2-Z6bPb98kSZnAZ7M3P_sJs-tFniLMJwZksukS8UYE/edit)
 
 ---
 
@@ -31,15 +31,17 @@
 
 ---
 
-## 🏆 Dual Formal Presentation Formats (Google Drive Hosted)
+## 📑 Formal Project Documentation & Presentation Package
 
-To strictly adhere to the **NASA Space Apps Challenge Demonstration Requirements**, all formal presentation assets are hosted on Google Drive for immediate, permission-free access:
+All official materials are hosted on Google Drive for open, permission-free access:
 
-* 📁 **Official Google Drive Submission Folder**: [https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW)
+* 📑 **Official Formal Documentation PDF**: [Download Complete Technical Documentation (Google Drive)](https://drive.google.com/file/d/15L9ZNJWbEoWV3W8c96wbt8WdH1xY90IS/view)  
+  *(A publication-grade 6-page comprehensive scientific documentation document including all problem statements, scientific methodologies, answers to the 6 official judging questions, NASA telemetry citations, 3D architecture, Supabase schema, and MIT open-source license).*
+* 📁 **Google Drive Master Submission Folder**: [Open Submission Folder](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW)
 
 ### 📊 Format A: Official 7-Slide Pitch Deck (Strict $\le 7$ Slides Limit)
 * **Google Slides Presentation**: [Open in Google Slides](https://docs.google.com/presentation/d/1B2-Z6bPb98kSZnAZ7M3P_sJs-tFniLMJwZksukS8UYE/edit)
-* **Pitch Deck PDF on Google Drive**: [Download PDF from Google Drive](https://drive.google.com/file/d/1NW2awdL8lP6mNeak9VAaWz_lDoNhBAer/view)
+* **Pitch Deck Slides PDF**: [Download Slides PDF from Google Drive](https://drive.google.com/file/d/1NW2awdL8lP6mNeak9VAaWz_lDoNhBAer/view)
 * **PowerPoint (.pptx) on Google Drive**: [Download PPTX from Google Drive](https://drive.google.com/file/d/1Qhoyp_cabQ5C4weMiZRpJVUAPNZqrEc0/view)
 
 ```
