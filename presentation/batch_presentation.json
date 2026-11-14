@@ -1,0 +1,611 @@
+[
+  {
+    "op": "delete-element",
+    "element": "i0"
+  },
+  {
+    "op": "delete-element",
+    "element": "i1"
+  },
+  {
+    "op": "set-background",
+    "slide": "p",
+    "color": "#070d1e"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "p",
+    "text": "NASA SPACE APPS CHALLENGE 2026 \u2022 GLOBAL COMPETITION",
+    "x": 60,
+    "y": 25,
+    "width": 600,
+    "height": 25,
+    "font_size": 11,
+    "bold": true,
+    "color": "#38bdf8",
+    "alignment": "center"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "p",
+    "text": "AETHER",
+    "x": 60,
+    "y": 55,
+    "width": 600,
+    "height": 65,
+    "font_size": 48,
+    "bold": true,
+    "color": "#ffffff",
+    "alignment": "center"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "p",
+    "text": "Planetary & Earth System Trend Detective",
+    "x": 60,
+    "y": 120,
+    "width": 600,
+    "height": 30,
+    "font_size": 18,
+    "bold": true,
+    "color": "#38bdf8",
+    "alignment": "center"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "p",
+    "text": "Synthesizing 40 Years of NASA Earth Observation Telemetry into an Interactive 3D Digital Twin",
+    "x": 80,
+    "y": 155,
+    "width": 560,
+    "height": 40,
+    "font_size": 13,
+    "color": "#94a3b8",
+    "alignment": "center"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "p",
+    "text": "FORENSIC ENGINE\n\n\u2022 Real-Time WebGL/Three.js at 60 FPS\n\u2022 1980\u20132026 Multi-Decadal Scrubber\n\u2022 Mann-Kendall Statistical Sieve (p < 0.001)\n\u2022 3D Planetary Internal Cutaways",
+    "x": 60,
+    "y": 205,
+    "width": 290,
+    "height": 130,
+    "font_size": 11,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "p",
+    "text": "OFFICIAL SUBMISSION\n\n\u2022 Challenge: Be An Earth System Trend Detective!\n\u2022 Live Web App: https://aether-nasa.vercel.app\n\u2022 GitHub: github.com/GabrielCodexxx/AetherNasa\n\u2022 Team: Aether Detective Team (Gabriel Portillo)",
+    "x": 370,
+    "y": 205,
+    "width": 290,
+    "height": 130,
+    "font_size": 11,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "p",
+    "text": "Publicly Accessible \u2022 Zero Registration Required \u2022 100% Open Source",
+    "x": 60,
+    "y": 355,
+    "width": 600,
+    "height": 25,
+    "font_size": 10,
+    "color": "#64748b",
+    "alignment": "center"
+  },
+  {
+    "op": "set-notes",
+    "slide": "p",
+    "text": "Good day, judges. We are proud to present Aether \u2014 an interactive 3D planetary digital twin that transforms four decades of NASA Earth satellite observations into an open-access forensic investigation workstation."
+  },
+  {
+    "op": "add-slide",
+    "layout": "BLANK",
+    "id": "SLIDE_2"
+  },
+  {
+    "op": "set-background",
+    "slide": "SLIDE_2",
+    "color": "#070d1e"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_2",
+    "text": "THE PROBLEM: DROWNING IN ENVIRONMENTAL NOISE",
+    "x": 50,
+    "y": 20,
+    "width": 620,
+    "height": 35,
+    "font_size": 20,
+    "bold": true,
+    "color": "#ffffff"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_2",
+    "text": "Why Detecting Genuine Planetary Trajectories is Difficult for Citizens and Scientists",
+    "x": 50,
+    "y": 55,
+    "width": 620,
+    "height": 20,
+    "font_size": 12,
+    "color": "#38bdf8"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_2",
+    "text": "1. Data Fragmentation & Silos\nTerabytes of vital telemetry scattered across disparate databases (PODAAC, GES DISC, Earthdata, NSIDC), making holistic system analysis nearly impossible for non-specialists.",
+    "x": 50,
+    "y": 85,
+    "width": 300,
+    "height": 115,
+    "font_size": 11,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_2",
+    "text": "2. Signal vs. Noise Dilemma\nShort-term weather oscillations (ENSO, seasonal anomalies, volcanic aerosols) mask authentic, decadal climate trends, leading to widespread misinterpretation.",
+    "x": 370,
+    "y": 85,
+    "width": 300,
+    "height": 115,
+    "font_size": 11,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_2",
+    "text": "3. The Regional Divergence Paradox\nA single underlying forcing (global warming) causes opposite physical responses simultaneously (e.g. Arctic greening vs. Amazon drying; polar ice loss vs. post-glacial rebound).",
+    "x": 50,
+    "y": 215,
+    "width": 300,
+    "height": 115,
+    "font_size": 11,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_2",
+    "text": "4. The Public Accessibility Barrier\nComplex mathematical formats and gated academic tools prevent students, educators, and journalists from verifying empirical climate evidence directly.",
+    "x": 370,
+    "y": 215,
+    "width": 300,
+    "height": 115,
+    "font_size": 11,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_2",
+    "text": "NASA Space Apps 2026 Objective: Answer What, Where, How Much, and Is It Significant?",
+    "x": 50,
+    "y": 345,
+    "width": 620,
+    "height": 35,
+    "font_size": 11,
+    "bold": true,
+    "color": "#38bdf8",
+    "background_color": "#1e293b",
+    "alignment": "center"
+  },
+  {
+    "op": "set-notes",
+    "slide": "SLIDE_2",
+    "text": "Our planet's vital signs are changing, but raw telemetry is vast and fragmented. Citizen scientists and students often struggle to separate temporary weather noise from authentic, statistically significant planetary trends."
+  },
+  {
+    "op": "add-slide",
+    "layout": "BLANK",
+    "id": "SLIDE_3"
+  },
+  {
+    "op": "set-background",
+    "slide": "SLIDE_3",
+    "color": "#070d1e"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_3",
+    "text": "THE SOLUTION: AETHER 3D DIGITAL TWIN",
+    "x": 50,
+    "y": 20,
+    "width": 620,
+    "height": 35,
+    "font_size": 20,
+    "bold": true,
+    "color": "#ffffff"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_3",
+    "text": "Instant, Browser-Based 60 FPS Earth System Intelligence at aether-nasa.vercel.app",
+    "x": 50,
+    "y": 55,
+    "width": 620,
+    "height": 20,
+    "font_size": 12,
+    "color": "#38bdf8"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_3",
+    "text": "ORBITAL MECHANICS\n\n\u2022 High-fidelity Three.js WebGL at 60 FPS\n\u2022 Complete solar system context\n\u2022 Real-time orbital paths for Terra, Aqua, GRACE-FO, ICESat-2, Sentinel-6\n\u2022 NASA Blue Marble 2K textures",
+    "x": 50,
+    "y": 85,
+    "width": 195,
+    "height": 245,
+    "font_size": 10,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_3",
+    "text": "40-YEAR SCRUBBER\n\n\u2022 Travel from 1980 to 2026\n\u2022 Procedural Earth response reflects decadal warming\n\u2022 Visual polar ice cap retreat (-12.6% per decade)\n\u2022 Albedo feedback and high-latitude vegetation shift simulation",
+    "x": 260,
+    "y": 85,
+    "width": 200,
+    "height": 245,
+    "font_size": 10,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_3",
+    "text": "GEOMETRIC HUD\n\n\u2022 Precision glassmorphic HUD\n\u2022 Zero-circular-dot design rule: diamond telemetry pins\n\u2022 Real-time anomaly charts and decadal rate indicators\n\u2022 Procedural Web Audio API soundscape synthesis",
+    "x": 475,
+    "y": 85,
+    "width": 195,
+    "height": 245,
+    "font_size": 10,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_3",
+    "text": "Zero Install \u2022 Zero Sign-Up \u2022 Runs on Mobile, Tablet, Laptop, and 4K Displays",
+    "x": 50,
+    "y": 345,
+    "width": 620,
+    "height": 35,
+    "font_size": 11,
+    "bold": true,
+    "color": "#34d399",
+    "background_color": "#1e293b",
+    "alignment": "center"
+  },
+  {
+    "op": "set-notes",
+    "slide": "SLIDE_3",
+    "text": "Aether solves this by unifying Earth's environmental systems in a fluid 3D digital twin. Users can scrub across 40 years of history, observing real-time physical responses across atmosphere, oceans, and ice caps."
+  },
+  {
+    "op": "add-slide",
+    "layout": "BLANK",
+    "id": "SLIDE_4"
+  },
+  {
+    "op": "set-background",
+    "slide": "SLIDE_4",
+    "color": "#070d1e"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_4",
+    "text": "SCIENTIFIC RIGOR & NASA DATA INTEGRATION",
+    "x": 50,
+    "y": 20,
+    "width": 620,
+    "height": 35,
+    "font_size": 20,
+    "bold": true,
+    "color": "#ffffff"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_4",
+    "text": "Primary Satellite Telemetry Validated Through Non-Parametric Statistics",
+    "x": 50,
+    "y": 55,
+    "width": 620,
+    "height": 20,
+    "font_size": 12,
+    "color": "#38bdf8"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_4",
+    "text": "PRIMARY NASA DATA STREAMS\n\n\u2022 NASA GISTEMP v4: Surface temperature anomalies (+1.39\u00b0C global mean warming)\n\u2022 NASA/GFZ GRACE & GRACE-FO: Gravimetric mass balance (-270 Gt/yr Greenland, -135 Gt/yr Antarctic ice loss)\n\u2022 Sentinel-6 & Jason-3: Radar altimetry (+4.2 mm/yr sea level rise)\n\u2022 NASA OCO-2 & NOAA GML: Atmospheric CO2 column densities (426 ppm)\n\u2022 NASA MODIS Terra/Aqua: NDVI vegetation greening/browning",
+    "x": 50,
+    "y": 85,
+    "width": 300,
+    "height": 245,
+    "font_size": 10,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_4",
+    "text": "MATHEMATICAL FORENSIC SIEVE\n\n\u2022 Mann-Kendall Monotonic Test: Non-parametric rank correlation proving non-random trajectory (p < 0.001)\n\u2022 Sen's Slope Estimator: Robust median-based slope calculation resistant to sensor outliers\n\u2022 Statistical Significance Locks: Verified at p < 0.05, p < 0.01, and p < 0.001 levels\n\u2022 Noise Filtering: Prevents temporary seasonal anomalies from triggering false trend alarms",
+    "x": 370,
+    "y": 85,
+    "width": 300,
+    "height": 245,
+    "font_size": 10,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_4",
+    "text": "100% Scientifically Vetted: Turning Raw Satellite Data into Defensible Climate Intelligence",
+    "x": 50,
+    "y": 345,
+    "width": 620,
+    "height": 35,
+    "font_size": 11,
+    "bold": true,
+    "color": "#38bdf8",
+    "background_color": "#1e293b",
+    "alignment": "center"
+  },
+  {
+    "op": "set-notes",
+    "slide": "SLIDE_4",
+    "text": "Every trend in Aether is mathematically validated. By implementing Mann-Kendall trend tests and Sen's slope calculations, Aether verifies non-random change with 99.9% scientific confidence."
+  },
+  {
+    "op": "add-slide",
+    "layout": "BLANK",
+    "id": "SLIDE_5"
+  },
+  {
+    "op": "set-background",
+    "slide": "SLIDE_5",
+    "color": "#070d1e"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_5",
+    "text": "BREAKTHROUGH INNOVATION: CUTAWAYS & DIVERGENCE",
+    "x": 50,
+    "y": 20,
+    "width": 620,
+    "height": 35,
+    "font_size": 20,
+    "bold": true,
+    "color": "#ffffff"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_5",
+    "text": "From Planetary Core Geodynamics to Polar Thermal Amplification",
+    "x": 50,
+    "y": 55,
+    "width": 620,
+    "height": 20,
+    "font_size": 12,
+    "color": "#38bdf8"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_5",
+    "text": "3D PLANETARY INTERIOR CUTAWAYS\n\n\u2022 3/4 cutaway cross-section revealing Earth's Crust, Mantle, Outer Core, and Inner Core\n\u2022 Interactive geometric callout badges with depth kilometers\n\u2022 Geodynamic Connection: Illustrates how outer core convection drives the planetary geodynamo\n\u2022 Connects mantle plumes and tectonic plate boundaries with surface atmospheric retention",
+    "x": 50,
+    "y": 85,
+    "width": 300,
+    "height": 245,
+    "font_size": 10,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_5",
+    "text": "DUAL-POLE DIVERGENCE THERMAL LENS\n\n\u2022 Visualizes Arctic Amplification: polar warming accelerating at 4x the global planetary average\n\u2022 Regional Divergence Mapping: contrasting Northern tundra greening against low-latitude forest desiccation\n\u2022 Altimetry Discrepancies: explains sea level rise in Pacific atolls vs. relative sea drop in post-glacial rebounding Scandinavia",
+    "x": 370,
+    "y": 85,
+    "width": 300,
+    "height": 245,
+    "font_size": 10,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_5",
+    "text": "Comparative Planetology: Exploring Why Earth Remains Habitable While Venus and Mars Diverged",
+    "x": 50,
+    "y": 345,
+    "width": 620,
+    "height": 35,
+    "font_size": 11,
+    "bold": true,
+    "color": "#34d399",
+    "background_color": "#1e293b",
+    "alignment": "center"
+  },
+  {
+    "op": "set-notes",
+    "slide": "SLIDE_5",
+    "text": "Aether goes beyond typical surface maps. We introduce 3D interior cutaways to connect mantle convection with atmospheric retention, alongside a divergence lens that exposes Arctic amplification in real time."
+  },
+  {
+    "op": "add-slide",
+    "layout": "BLANK",
+    "id": "SLIDE_6"
+  },
+  {
+    "op": "set-background",
+    "slide": "SLIDE_6",
+    "color": "#070d1e"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_6",
+    "text": "CITIZEN SCIENCE & SUPABASE CLOUD SYNC",
+    "x": 50,
+    "y": 20,
+    "width": 620,
+    "height": 35,
+    "font_size": 20,
+    "bold": true,
+    "color": "#ffffff"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_6",
+    "text": "Empowering Distributed Global Climate Investigation and Classroom Collaboration",
+    "x": 50,
+    "y": 55,
+    "width": 620,
+    "height": 20,
+    "font_size": 12,
+    "color": "#38bdf8"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_6",
+    "text": "DETECTIVE LOGBOOK\n\n\u2022 Guided investigation workflow\n\u2022 Log callsign, variable, target year, and empirical verdict\n\u2022 Record observational notes directly against satellite data\n\u2022 Gamified case tracking inspires STEM classroom curiosity",
+    "x": 50,
+    "y": 85,
+    "width": 195,
+    "height": 245,
+    "font_size": 10,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_6",
+    "text": "SUPABASE POSTGRESQL\n\n\u2022 Live PostgreSQL database on Supabase Edge infrastructure\n\u2022 Row-Level Security (RLS) protects data integrity\n\u2022 Global real-time sync across connected research stations\n\u2022 Instant schema migration with zero manual server maintenance",
+    "x": 260,
+    "y": 85,
+    "width": 200,
+    "height": 245,
+    "font_size": 10,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_6",
+    "text": "OFFLINE-FIRST ENGINE\n\n\u2022 Graceful degradation to local browser storage\n\u2022 100% resilient if internet drops during field expeditions\n\u2022 Procedural Web Audio anomaly synthesis for auditory learners\n\u2022 Frictionless export to research memos",
+    "x": 475,
+    "y": 85,
+    "width": 195,
+    "height": 245,
+    "font_size": 10,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_6",
+    "text": "Live Cloud Endpoint: toakvrrofklcjwyjahcp.supabase.co \u2022 Fully Secured & Synchronized",
+    "x": 50,
+    "y": 345,
+    "width": 620,
+    "height": 35,
+    "font_size": 11,
+    "bold": true,
+    "color": "#38bdf8",
+    "background_color": "#1e293b",
+    "alignment": "center"
+  },
+  {
+    "op": "set-notes",
+    "slide": "SLIDE_6",
+    "text": "Aether transforms observation into collaboration. With our live Supabase database, students and citizen scientists file forensic logs, sharing real-time climate discoveries across global classrooms."
+  },
+  {
+    "op": "add-slide",
+    "layout": "BLANK",
+    "id": "SLIDE_7"
+  },
+  {
+    "op": "set-background",
+    "slide": "SLIDE_7",
+    "color": "#070d1e"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_7",
+    "text": "GLOBAL IMPACT & OPEN SCIENCE SUBMISSION",
+    "x": 50,
+    "y": 20,
+    "width": 620,
+    "height": 35,
+    "font_size": 20,
+    "bold": true,
+    "color": "#ffffff"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_7",
+    "text": "NASA Space Apps 2026 Submission Package \u2022 Deployed and Publicly Accessible",
+    "x": 50,
+    "y": 55,
+    "width": 620,
+    "height": 20,
+    "font_size": 12,
+    "color": "#38bdf8"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_7",
+    "text": "SUBMISSION VERIFICATION\n\n\u2022 Challenge: Be An Earth System Trend Detective!\n\u2022 Live Web App: https://aether-nasa.vercel.app\n  (No password, permission, or login required)\n\u2022 Open-Source Repo: github.com/GabrielCodexxx/AetherNasa\n  (MIT License, complete source code & schemas)\n\u2022 NASA Data Citation: GISTEMP, GRACE-FO, Sentinel-6, OCO-2, MODIS\n\u2022 Limits Adherence: Exactly 7 Slides / <= 30s Video Walkthrough",
+    "x": 50,
+    "y": 85,
+    "width": 300,
+    "height": 245,
+    "font_size": 10,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_7",
+    "text": "INTENDED IMPACT & ROADMAP\n\n\u2022 Education: Turn every STEM student into an Earth Detective\n\u2022 Journalism: Provide fact-checked NASA telemetry briefing cards\n\u2022 Policy: Bridge the gap between complex science and decision-making\n\u2022 Roadmap Q1 2027: Integrate NASA SWOT surface water telemetry and live satellite pass alerts\n\n'Uncovering the Trends Shaping Our Living Planet.'",
+    "x": 370,
+    "y": 85,
+    "width": 300,
+    "height": 245,
+    "font_size": 10,
+    "color": "#e2e8f0",
+    "background_color": "#0f172a"
+  },
+  {
+    "op": "add-textbox",
+    "slide": "SLIDE_7",
+    "text": "Explore Aether Now at https://aether-nasa.vercel.app \u2022 Thank You, NASA Judges!",
+    "x": 50,
+    "y": 345,
+    "width": 620,
+    "height": 35,
+    "font_size": 11,
+    "bold": true,
+    "color": "#34d399",
+    "background_color": "#1e293b",
+    "alignment": "center"
+  },
+  {
+    "op": "set-notes",
+    "slide": "SLIDE_7",
+    "text": "Aether is deployed and publicly accessible right now. We invite judges and citizens worldwide to explore our living Earth at aether-nasa.vercel.app. Thank you."
+  }
+]
