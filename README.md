@@ -11,6 +11,7 @@
 
 [![NASA Space Apps 2026](https://img.shields.io/badge/NASA_Space_Apps_2026-Earth_System_Trend_Detective-0284c7?style=for-the-badge&logo=nasa&logoColor=white)](https://www.spaceappschallenge.org/)
 [![Live App](https://img.shields.io/badge/LIVE_PRODUCTION-aether--nasa.vercel.app-34d399?style=for-the-badge&logo=vercel&logoColor=white)](https://aether-nasa.vercel.app)
+[![Google Drive Submission](https://img.shields.io/badge/Google_Drive-Submission_Folder-4285f4?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW)
 [![License: MIT](https://img.shields.io/badge/License-MIT-f59e0b?style=for-the-badge)](LICENSE)
 [![WebGL 60 FPS](https://img.shields.io/badge/WebGL-60_FPS_Locked-6366f1?style=for-the-badge&logo=three.js&logoColor=white)](https://threejs.org/)
 [![Database: Supabase](https://img.shields.io/badge/Database-Supabase_PostgreSQL-10b981?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
@@ -18,7 +19,7 @@
 
 <br/>
 
-[🚀 **Launch Live Application**](https://aether-nasa.vercel.app) • [📊 **Google Slides Pitch Deck (7 Slides)**](https://docs.google.com/presentation/d/1B2-Z6bPb98kSZnAZ7M3P_sJs-tFniLMJwZksukS8UYE/edit) • [🎬 **30s Video Walkthrough Studio**](presentation/video_walkthrough.html) • [📄 **Download PDF Deck**](presentation/AETHER_NASA_Pitch_Deck.pdf)
+[🚀 **Launch Live Application**](https://aether-nasa.vercel.app) • [📁 **Official Google Drive Submission Folder**](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW) • [📊 **Google Slides (7 Slides)**](https://docs.google.com/presentation/d/1B2-Z6bPb98kSZnAZ7M3P_sJs-tFniLMJwZksukS8UYE/edit) • [📄 **Pitch Deck PDF on Google Drive**](https://drive.google.com/file/d/1NW2awdL8lP6mNeak9VAaWz_lDoNhBAer/view)
 
 ---
 
@@ -30,14 +31,16 @@
 
 ---
 
-## 🏆 Dual Formal Presentation Formats
+## 🏆 Dual Formal Presentation Formats (Google Drive Hosted)
 
-To strictly adhere to the **NASA Space Apps Challenge Demonstration Requirements**, Aether provides both official presentation options:
+To strictly adhere to the **NASA Space Apps Challenge Demonstration Requirements**, all formal presentation assets are hosted on Google Drive for immediate, permission-free access:
+
+* 📁 **Official Google Drive Submission Folder**: [https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW)
 
 ### 📊 Format A: Official 7-Slide Pitch Deck (Strict $\le 7$ Slides Limit)
-* **Live Google Slides Presentation**: [Open in Google Slides](https://docs.google.com/presentation/d/1B2-Z6bPb98kSZnAZ7M3P_sJs-tFniLMJwZksukS8UYE/edit)
-* **Direct Downloads**: [presentation/AETHER_NASA_Pitch_Deck.pdf](presentation/AETHER_NASA_Pitch_Deck.pdf) *(PDF)* • [presentation/AETHER_NASA_Pitch_Deck.pptx](presentation/AETHER_NASA_Pitch_Deck.pptx) *(PowerPoint)*
-* **Interactive Web Presenter**: [presentation/index.html](presentation/index.html) *(16:9 fullscreen presenter with speaker notes and keyboard arrow navigation)*
+* **Google Slides Presentation**: [Open in Google Slides](https://docs.google.com/presentation/d/1B2-Z6bPb98kSZnAZ7M3P_sJs-tFniLMJwZksukS8UYE/edit)
+* **Pitch Deck PDF on Google Drive**: [Download PDF from Google Drive](https://drive.google.com/file/d/1NW2awdL8lP6mNeak9VAaWz_lDoNhBAer/view)
+* **PowerPoint (.pptx) on Google Drive**: [Download PPTX from Google Drive](https://drive.google.com/file/d/1Qhoyp_cabQ5C4weMiZRpJVUAPNZqrEc0/view)
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
@@ -53,12 +56,14 @@ To strictly adhere to the **NASA Space Apps Challenge Demonstration Requirements
 
 ---
 
-### 🎬 Format B: Official 30-Second Video Presentation (Strict $\le 30.0$s Limit)
-* **Interactive Teleprompter & Storyboard Studio**: [presentation/video_walkthrough.html](presentation/video_walkthrough.html)
-* **Duration**: Exactly **29.5 seconds**
-* **Word Count**: Exactly **74 spoken words** (~148 words/minute natural pacing)
+### 🎬 Format B: 30-Second Video Presentation (Strict $\le 30.0$s Limit)
+* **Video Location on Google Drive**: Uploaded directly inside the [Submission Folder](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW)
+* **Target Duration**: Exactly **29.5 seconds**
+* **Spoken Word Count**: Exactly **74 words** (~148 words/minute natural pacing)
 
-| Timestamp | Screen Action on `aether-nasa.vercel.app` | Spoken Voiceover Narration |
+#### 30-Second Screen Recording Script & Action Guide:
+
+| Timestamp | Visual Action on [aether-nasa.vercel.app](https://aether-nasa.vercel.app) | Spoken Voiceover Narration |
 | :---: | :--- | :--- |
 | **0:00 – 0:05** | Start full screen on 3D cosmos. Click **Earth** to zoom smoothly into orbit with active satellite paths. | *"Our planet is changing, but across 40 years of satellite records, critical signals are drowned in noise."* |
 | **0:05 – 0:13** | Drag **Timeline Scrubber** from 1980 to 2026. Right dossier graph animates temperature climbing $+1.39^\circ\text{C}$. | *"Meet **Aether** — the NASA Earth System Trend Detective, synthesizing four decades of GISTEMP, GRACE, and Sentinel telemetry into an interactive 3D digital twin."* |
