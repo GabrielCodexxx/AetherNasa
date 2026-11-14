@@ -19,7 +19,7 @@
 
 <br/>
 
-[🚀 **Launch Live Application**](https://aether-nasa.vercel.app) • [📑 **Formal Documentation PDF (Google Drive)**](https://drive.google.com/file/d/15L9ZNJWbEoWV3W8c96wbt8WdH1xY90IS/view) • [📁 **Submission Folder**](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW) • [📊 **Google Slides Deck**](https://docs.google.com/presentation/d/1B2-Z6bPb98kSZnAZ7M3P_sJs-tFniLMJwZksukS8UYE/edit)
+[🚀 **Launch Live Application**](https://aether-nasa.vercel.app) • [🎬 **30s Video Walkthrough (Google Drive)**](https://drive.google.com/file/d/1UF_KUHlwuOllSknxpe9ccC-2P7-r0w0o/view) • [📑 **Formal Documentation PDF (Google Drive)**](https://drive.google.com/file/d/15L9ZNJWbEoWV3W8c96wbt8WdH1xY90IS/view) • [📁 **Submission Folder**](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW) • [📊 **Google Slides Deck**](https://docs.google.com/presentation/d/1B2-Z6bPb98kSZnAZ7M3P_sJs-tFniLMJwZksukS8UYE/edit)
 
 ---
 
@@ -59,8 +59,11 @@ All official materials are hosted on Google Drive for open, permission-free acce
 ---
 
 ### 🎬 Format B: 30-Second Video Presentation (Strict $\le 30.0$s Limit)
-* **Video Location on Google Drive**: Uploaded directly inside the [Submission Folder](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW)
-* **Target Duration**: Exactly **29.5 seconds**
+* **Direct Video Watch Link (Google Drive)**: [Watch 30s Walkthrough Video (Google Drive)](https://drive.google.com/file/d/1UF_KUHlwuOllSknxpe9ccC-2P7-r0w0o/view)
+* **Video Location on Google Drive**: Uploaded directly inside the [Submission Folder](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW) (`AETHER_30s_Walkthrough_Video.mp4`)
+* **InVideo AI Studio Project**: [InVideo AI seq-1.1 Timeline](https://invideo.io/@shotis-workspace-3/aether/tree/main/seq-1.1)
+* **Audio Track**: Royalty-Free Ambient Space Soundtrack (*"Interstellar Voyage"* at -18 dB with dynamic fades — zero copyright risk)
+* **Measured Duration**: Exactly **29.79 seconds** (fully compliant with NASA $\le 30.0$s disqualification boundary)
 * **Spoken Word Count**: Exactly **74 words** (~148 words/minute natural pacing)
 
 #### 30-Second Screen Recording Script & Action Guide:
