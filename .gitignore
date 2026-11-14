@@ -24,8 +24,10 @@ dist-ssr
 *.sw?
 
 .env
-.env*.local
+.env*
+*.mp4.local
 .vercel
 
 .vercel
 .env*
+*.mp4
