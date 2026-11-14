@@ -11,7 +11,7 @@
 
 [![NASA Space Apps 2026](https://img.shields.io/badge/NASA_Space_Apps_2026-Earth_System_Trend_Detective-0284c7?style=for-the-badge&logo=nasa&logoColor=white)](https://www.spaceappschallenge.org/)
 [![Live App](https://img.shields.io/badge/LIVE_PRODUCTION-aether--nasa.vercel.app-34d399?style=for-the-badge&logo=vercel&logoColor=white)](https://aether-nasa.vercel.app)
-[![Google Drive Submission](https://img.shields.io/badge/Google_Drive-Submission_Folder-4285f4?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW)
+[![NASA Space Apps 2026 - AETHER Submission](https://img.shields.io/badge/Google_Drive-NASA_Space_Apps_2026_--_AETHER_Submission-4285f4?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW)
 [![License: MIT](https://img.shields.io/badge/License-MIT-f59e0b?style=for-the-badge)](LICENSE)
 [![WebGL 60 FPS](https://img.shields.io/badge/WebGL-60_FPS_Locked-6366f1?style=for-the-badge&logo=three.js&logoColor=white)](https://threejs.org/)
 [![Database: Supabase](https://img.shields.io/badge/Database-Supabase_PostgreSQL-10b981?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
@@ -19,7 +19,7 @@
 
 <br/>
 
-[🚀 **Launch Live Application**](https://aether-nasa.vercel.app) • [🎬 **30s Video Walkthrough (Google Drive)**](https://drive.google.com/file/d/1UF_KUHlwuOllSknxpe9ccC-2P7-r0w0o/view) • [📑 **Formal Documentation PDF (Google Drive)**](https://drive.google.com/file/d/15L9ZNJWbEoWV3W8c96wbt8WdH1xY90IS/view) • [📁 **Submission Folder**](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW) • [📊 **Google Slides Deck**](https://docs.google.com/presentation/d/1B2-Z6bPb98kSZnAZ7M3P_sJs-tFniLMJwZksukS8UYE/edit)
+[🚀 **Launch Live Application**](https://aether-nasa.vercel.app) • [📁 **NASA Space Apps 2026 - AETHER Submission**](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW) • [🎬 **30s Walkthrough Video**](https://drive.google.com/file/d/1UF_KUHlwuOllSknxpe9ccC-2P7-r0w0o/view) • [📑 **Formal Documentation PDF**](https://drive.google.com/file/d/15L9ZNJWbEoWV3W8c96wbt8WdH1xY90IS/view) • [📊 **Google Slides Deck**](https://docs.google.com/presentation/d/1B2-Z6bPb98kSZnAZ7M3P_sJs-tFniLMJwZksukS8UYE/edit)
 
 ---
 
@@ -31,18 +31,31 @@
 
 ---
 
-## 📑 Formal Project Documentation & Presentation Package
+## 📑 Official NASA Space Apps Submission Package
 
-All official materials are hosted on Google Drive for open, permission-free access:
+All official submission materials are centralized in the public Google Drive submission repository:
 
-* 📑 **Official Formal Documentation PDF**: [Download Complete Technical Documentation (Google Drive)](https://drive.google.com/file/d/15L9ZNJWbEoWV3W8c96wbt8WdH1xY90IS/view)  
-  *(A publication-grade 6-page comprehensive scientific documentation document including all problem statements, scientific methodologies, answers to the 6 official judging questions, NASA telemetry citations, 3D architecture, Supabase schema, and MIT open-source license).*
-* 📁 **Google Drive Master Submission Folder**: [Open Submission Folder](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW)
+> 📁 **Official Google Drive Submission Repository**:  
+> ### [**NASA Space Apps 2026 - AETHER Submission**](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW)  
+> *100% Public Access • Zero Login or Password Required • Fully compliant with Global Award eligibility criteria.*
+
+### 📦 Submission Deliverables & Direct Access Links
+
+| Deliverable | File / Artifact | Direct Link | Verified Specification |
+| :--- | :--- | :--- | :--- |
+| 🎬 **30s Video Presentation** | `AETHER_30s_Walkthrough_Video.mp4` / `Aether.mp4` | [Watch Video (Google Drive)](https://drive.google.com/file/d/1UF_KUHlwuOllSknxpe9ccC-2P7-r0w0o/view) | **29.79s** (Strictly $\le 30.0$s limit) • 1080p 60 FPS • Royalty-Free Space BGM |
+| 📑 **Formal Documentation PDF** | `AETHER_NASA_Formal_Documentation.pdf` | [Download Documentation PDF](https://drive.google.com/file/d/15L9ZNJWbEoWV3W8c96wbt8WdH1xY90IS/view) | 6-Page Formal Scientific Report • Answers all 6 Judging Questions |
+| 📊 **7-Slide Pitch Deck (PDF)** | `AETHER_NASA_Pitch_Deck.pdf` | [Download Pitch Deck PDF](https://drive.google.com/file/d/15p9udcW2EGhC_7dU-upZacCpzNTTwkPr/view) | Exactly **7 Slides** (Strictly $\le 7$-slide limit) |
+| 💻 **Pitch Deck (PowerPoint PPTX)** | `AETHER - NASA Space Apps Challenge 2026.pptx` | [Download PPTX](https://drive.google.com/file/d/1JqwsWnCUPi57Gd87fBt8m-wt5Oubicrl/view) | Native editable Microsoft PowerPoint presentation |
+| 🌐 **Interactive Google Slides** | Online Presentation Deck | [Open in Google Slides](https://docs.google.com/presentation/d/1B2-Z6bPb98kSZnAZ7M3P_sJs-tFniLMJwZksukS8UYE/edit) | Live browser interactive presentation |
+| 📁 **Master Submission Folder** | Complete Drive Folder | [NASA Space Apps 2026 - AETHER Submission](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW) | Centralized hub containing all video, document, and slide assets |
+
+---
 
 ### 📊 Format A: Official 7-Slide Pitch Deck (Strict $\le 7$ Slides Limit)
-* **Google Slides Presentation**: [Open in Google Slides](https://docs.google.com/presentation/d/1B2-Z6bPb98kSZnAZ7M3P_sJs-tFniLMJwZksukS8UYE/edit)
-* **Pitch Deck Slides PDF**: [Download Slides PDF from Google Drive](https://drive.google.com/file/d/1NW2awdL8lP6mNeak9VAaWz_lDoNhBAer/view)
-* **PowerPoint (.pptx) on Google Drive**: [Download PPTX from Google Drive](https://drive.google.com/file/d/1Qhoyp_cabQ5C4weMiZRpJVUAPNZqrEc0/view)
+* **Interactive Google Slides**: [Open in Google Slides](https://docs.google.com/presentation/d/1B2-Z6bPb98kSZnAZ7M3P_sJs-tFniLMJwZksukS8UYE/edit)
+* **Pitch Deck Slides PDF**: [Download Slides PDF from Google Drive](https://drive.google.com/file/d/15p9udcW2EGhC_7dU-upZacCpzNTTwkPr/view)
+* **PowerPoint (.pptx) on Google Drive**: [Download PPTX from Google Drive](https://drive.google.com/file/d/1JqwsWnCUPi57Gd87fBt8m-wt5Oubicrl/view)
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
@@ -60,7 +73,8 @@ All official materials are hosted on Google Drive for open, permission-free acce
 
 ### 🎬 Format B: 30-Second Video Presentation (Strict $\le 30.0$s Limit)
 * **Direct Video Watch Link (Google Drive)**: [Watch 30s Walkthrough Video (Google Drive)](https://drive.google.com/file/d/1UF_KUHlwuOllSknxpe9ccC-2P7-r0w0o/view)
-* **Video Location on Google Drive**: Uploaded directly inside the [Submission Folder](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW) (`AETHER_30s_Walkthrough_Video.mp4`)
+* **Alternative Video Link (Google Drive)**: [Watch Aether.mp4 (Google Drive)](https://drive.google.com/file/d/1i4SXHwMG5oGx3oF9rAQSpWOt4Gou38RK/view)
+* **Video Location on Google Drive**: Uploaded directly inside [NASA Space Apps 2026 - AETHER Submission](https://drive.google.com/drive/folders/1oRw8zpRyT1J7JADlQ4jd8hSAmxBh6LgW)
 * **InVideo AI Studio Project**: [InVideo AI seq-1.1 Timeline](https://invideo.io/@shotis-workspace-3/aether/tree/main/seq-1.1)
 * **Audio Track**: Royalty-Free Ambient Space Soundtrack (*"Interstellar Voyage"* at -18 dB with dynamic fades — zero copyright risk)
 * **Measured Duration**: Exactly **29.79 seconds** (fully compliant with NASA $\le 30.0$s disqualification boundary)
