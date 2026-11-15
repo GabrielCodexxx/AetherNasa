@@ -1,258 +1,147 @@
-import { useState, useRef, lazy, Suspense } from 'react';
-import { ThreeSpaceSystem } from './components/ThreeSpaceSystem';
+import { lazy, Suspense } from 'react';
 import { EarthSystemHeader } from './components/EarthSystemHeader';
 import { PlanetHUD } from './components/PlanetHUD';
-import { EarthTrendInspector } from './components/EarthTrendInspector';
 import { EarthTimelineScrubber } from './components/EarthTimelineScrubber';
-import { DetectiveScenariosModal } from './components/DetectiveScenariosModal';
+import { EARTH_SYSTEM_TRENDS } from './utils/earthSystemData';
 import {
-  EARTH_SYSTEM_TRENDS,
-  SOLAR_PLANETS,
-} from './utils/earthSystemData';
-import type {
-  SystemViewMode,
-  PlanetData,
-  EarthTrendDomain,
-  HotspotMarker,
-  DetectiveScenario,
-} from './types/earthSystem';
+  SpaceViewportFallback,
+  InspectorFallback,
+  ModalLoadingFallback,
+} from './components/modals/AppFallbacks';
+import { useEarthDetectiveState } from './components/modals/useEarthDetectiveState';
 
-// Code-split modals
+const ThreeSpaceSystem = lazy(() =>
+  import('./components/ThreeSpaceSystem').then((m) => ({ default: m.ThreeSpaceSystem }))
+);
+const EarthTrendInspector = lazy(() =>
+  import('./components/EarthTrendInspector').then((m) => ({ default: m.EarthTrendInspector }))
+);
+const DetectiveScenariosModal = lazy(() => import('./components/DetectiveScenariosModal'));
 const EarthScienceModal = lazy(() => import('./components/EarthScienceModal'));
 const DetectiveLogModal = lazy(() => import('./components/DetectiveLogModal'));
 const ComparativePlanetologyModal = lazy(() => import('./components/ComparativePlanetologyModal'));
 const ForensicReportModal = lazy(() => import('./components/ForensicReportModal'));
 
 export function App() {
-  // Navigation & View Mode
-  const [viewMode, setViewMode] = useState<SystemViewMode>('solar_system');
-  const [selectedPlanetId, setSelectedPlanetId] = useState<string>('earth');
-  const [selectedTrendId, setSelectedTrendId] = useState<string>(EARTH_SYSTEM_TRENDS[0].id);
-  const [selectedHotspot, setSelectedHotspot] = useState<HotspotMarker | null>(null);
-
-  // Time & Domain Filtering
-  const [currentYear, setCurrentYear] = useState<number>(2026);
-  const [selectedDomain, setSelectedDomain] = useState<EarthTrendDomain>('all');
-
-  // Modals
-  const [showBriefing, setShowBriefing] = useState<boolean>(false);
-  const [showLogbook, setShowLogbook] = useState<boolean>(false);
-  const [showScenarios, setShowScenarios] = useState<boolean>(false);
-  const [showPlanetology, setShowPlanetology] = useState<boolean>(false);
-  const [showReportModal, setShowReportModal] = useState<boolean>(false);
-  const [isPlanetHudOpen, setIsPlanetHudOpen] = useState<boolean>(false);
-
-  // 3D Viewport Controls (Shared with Header Left Capsule)
-  const [autoRotate, setAutoRotate] = useState<boolean>(true);
-  const [showGrid, setShowGrid] = useState<boolean>(true);
-  const [showDivergenceLens, setShowDivergenceLens] = useState<boolean>(false);
-  const zoomInRef = useRef<(() => void) | null>(null);
-  const zoomOutRef = useRef<(() => void) | null>(null);
-
-  // Active planet & trend
-  const currentPlanet =
-    SOLAR_PLANETS.find((p) => p.id === selectedPlanetId) || SOLAR_PLANETS[3];
-  const currentTrend =
-    EARTH_SYSTEM_TRENDS.find((t) => t.id === selectedTrendId) || EARTH_SYSTEM_TRENDS[0];
-
-  const handleSelectPlanet = (planet: PlanetData) => {
-    setSelectedPlanetId(planet.id);
-    setIsPlanetHudOpen(true);
-    if (planet.id === 'earth' && viewMode !== 'structure') {
-      setViewMode('earth_focus');
-    }
-  };
-
-  const handleNextPlanet = () => {
-    const currentIndex = SOLAR_PLANETS.findIndex((p) => p.id === selectedPlanetId);
-    const nextIndex = (currentIndex + 1) % SOLAR_PLANETS.length;
-    const nextPlanet = SOLAR_PLANETS[nextIndex];
-    setSelectedPlanetId(nextPlanet.id);
-    setIsPlanetHudOpen(true);
-  };
-
-  const handlePrevPlanet = () => {
-    const currentIndex = SOLAR_PLANETS.findIndex((p) => p.id === selectedPlanetId);
-    const prevIndex = (currentIndex - 1 + SOLAR_PLANETS.length) % SOLAR_PLANETS.length;
-    const prevPlanet = SOLAR_PLANETS[prevIndex];
-    setSelectedPlanetId(prevPlanet.id);
-    setIsPlanetHudOpen(true);
-  };
-
-  const handleSelectHotspot = (hotspot: HotspotMarker) => {
-    setSelectedHotspot(hotspot);
-    const match = EARTH_SYSTEM_TRENDS.find((t) => t.domain === hotspot.domain);
-    if (match) {
-      setSelectedTrendId(match.id);
-    }
-  };
-
-  const handleSelectScenario = (scenario: DetectiveScenario) => {
-    setSelectedPlanetId('earth');
-    setViewMode('earth_focus');
-    const match = EARTH_SYSTEM_TRENDS.find((t) => t.domain === scenario.domain);
-    if (match) {
-      setSelectedTrendId(match.id);
-    }
-    setCurrentYear(scenario.focusYear);
-  };
-
-  const handleSelectDomain = (domain: EarthTrendDomain) => {
-    setSelectedDomain(domain);
-    if (domain !== 'all') {
-      const match = EARTH_SYSTEM_TRENDS.find((t) => t.domain === domain);
-      if (match) {
-        setSelectedTrendId(match.id);
-      }
-    }
-  };
-
-  const isStructureMode = viewMode === 'structure';
+  const s = useEarthDetectiveState();
+  const closeModal = () => s.setActiveModal(null);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-[#f8fafc] text-slate-800 select-none font-sans">
-      {/* 1. Full-Screen 3D Universe, Solar System, Asteroid Belt, Earth & Structure Cutaway */}
       <div className="absolute inset-0 z-0">
-        <ThreeSpaceSystem
-          viewMode={viewMode}
-          selectedPlanetId={selectedPlanetId}
-          selectedHotspotId={selectedHotspot ? selectedHotspot.id : null}
-          currentYear={currentYear}
-          onSelectPlanet={handleSelectPlanet}
-          onSelectHotspot={handleSelectHotspot}
-          onSelectSatellite={() => setShowBriefing(true)}
-          autoRotate={autoRotate}
-          showGrid={showGrid}
-          showDivergenceLens={showDivergenceLens}
-          zoomInRef={zoomInRef}
-          zoomOutRef={zoomOutRef}
-        />
+        <Suspense fallback={<SpaceViewportFallback />}>
+          <ThreeSpaceSystem
+            viewMode={s.viewMode}
+            selectedPlanetId={s.selectedPlanetId}
+            selectedHotspotId={s.selectedHotspot ? s.selectedHotspot.id : null}
+            currentYear={s.currentYear}
+            onSelectPlanet={s.handleSelectPlanet}
+            onSelectHotspot={s.handleSelectHotspot}
+            onSelectSatellite={() => s.setActiveModal('briefing')}
+            autoRotate={s.autoRotate}
+            showGrid={s.showGrid}
+            showDivergenceLens={s.showDivergenceLens}
+            zoomInRef={s.zoomInRef}
+            zoomOutRef={s.zoomOutRef}
+          />
+        </Suspense>
       </div>
 
-      {/* 2. Next-Gen NASA Space Command Capsule Header (Unified Tri-Capsule Alignment) */}
       <EarthSystemHeader
-        viewMode={viewMode}
-        selectedPlanetId={selectedPlanetId}
-        onChangeViewMode={(mode) => {
-          setViewMode(mode);
-          if (mode === 'earth_focus') {
-            setSelectedPlanetId('earth');
-          }
-        }}
-        onSelectPlanet={handleSelectPlanet}
-        onOpenBriefing={() => setShowBriefing(true)}
-        onOpenLogbook={() => setShowLogbook(true)}
-        onOpenScenarios={() => setShowScenarios(true)}
-        onOpenPlanetology={() => setShowPlanetology(true)}
-        onOpenReport={() => setShowReportModal(true)}
-        // Left 3D Viewport & Dossier Controls (Top-Aligned Tri-Capsule Header)
-        planetName={currentPlanet.name}
-        isPlanetHudOpen={isPlanetHudOpen}
-        onTogglePlanetHud={() => setIsPlanetHudOpen(!isPlanetHudOpen)}
-        onZoomIn={() => zoomInRef.current?.()}
-        onZoomOut={() => zoomOutRef.current?.()}
-        autoRotate={autoRotate}
-        onToggleAutoRotate={() => setAutoRotate(!autoRotate)}
-        showGrid={showGrid}
-        onToggleGrid={() => setShowGrid(!showGrid)}
-        showDivergenceLens={showDivergenceLens}
-        onToggleDivergenceLens={() => setShowDivergenceLens(!showDivergenceLens)}
+        viewMode={s.viewMode}
+        selectedPlanetId={s.selectedPlanetId}
+        onChangeViewMode={s.handleHeaderViewMode}
+        onSelectPlanet={s.handleSelectPlanet}
+        onOpenBriefing={() => s.setActiveModal('briefing')}
+        onOpenLogbook={() => s.setActiveModal('logbook')}
+        onOpenScenarios={() => s.setActiveModal('scenarios')}
+        onOpenPlanetology={() => s.setActiveModal('planetology')}
+        onOpenReport={() => s.setActiveModal('report')}
+        planetName={s.currentPlanet.name}
+        isPlanetHudOpen={s.isPlanetHudOpen}
+        onTogglePlanetHud={() => s.setIsPlanetHudOpen(!s.isPlanetHudOpen)}
+        onZoomIn={() => s.zoomInRef.current?.()}
+        onZoomOut={() => s.zoomOutRef.current?.()}
+        autoRotate={s.autoRotate}
+        onToggleAutoRotate={() => s.setAutoRotate(!s.autoRotate)}
+        showGrid={s.showGrid}
+        onToggleGrid={() => s.setShowGrid(!s.showGrid)}
+        showDivergenceLens={s.showDivergenceLens}
+        onToggleDivergenceLens={() => s.setShowDivergenceLens(!s.showDivergenceLens)}
       />
 
-      {/* 3. Left Planetary Intelligence & Structure Dossier (Appears upon clicking planet) */}
       <PlanetHUD
-        planet={currentPlanet}
-        viewMode={viewMode}
-        isOpen={isPlanetHudOpen}
-        onClose={() => {
-          setIsPlanetHudOpen(false);
-          if (viewMode === 'structure') {
-            setViewMode(selectedPlanetId === 'earth' ? 'earth_focus' : 'planet_focus');
-          }
-        }}
-        onChangeViewMode={(mode) => {
-          setViewMode(mode);
-          if (mode === 'solar_system') {
-            setIsPlanetHudOpen(false);
-          } else {
-            setIsPlanetHudOpen(true);
-          }
-        }}
-        onNextPlanet={handleNextPlanet}
-        onPrevPlanet={handlePrevPlanet}
-        onOpenEncyclopedia={() => setShowBriefing(true)}
+        planet={s.currentPlanet}
+        viewMode={s.viewMode}
+        isOpen={s.isPlanetHudOpen}
+        onClose={s.handleHudClose}
+        onChangeViewMode={s.handleHudViewMode}
+        onNextPlanet={() => s.handleStepPlanet(1)}
+        onPrevPlanet={() => s.handleStepPlanet(-1)}
+        onOpenEncyclopedia={() => s.setActiveModal('briefing')}
       />
 
-      {/* 4. Right Regional Trend Divergence Dossier (No dots) */}
-      {!isStructureMode && (
+      {s.viewMode !== 'structure' && (
         <div className="absolute top-20 right-4 sm:right-6 z-20 pointer-events-auto hidden md:block">
-          <EarthTrendInspector
-            trend={currentTrend}
-            selectedHotspot={selectedHotspot}
-            currentYear={currentYear}
-            onClearHotspot={() => setSelectedHotspot(null)}
-            onOpenEncyclopedia={() => setShowBriefing(true)}
-            onOpenReportModal={() => setShowReportModal(true)}
-          />
+          <Suspense fallback={<InspectorFallback />}>
+            <EarthTrendInspector
+              trend={s.currentTrend}
+              selectedHotspot={s.selectedHotspot}
+              currentYear={s.currentYear}
+              onClearHotspot={() => s.setSelectedHotspot(null)}
+              onOpenEncyclopedia={() => s.setActiveModal('briefing')}
+              onOpenReportModal={() => s.setActiveModal('report')}
+            />
+          </Suspense>
         </div>
       )}
 
-      {/* 5. Bottom Precision Timeline Scrubber (1980 - 2026) */}
       <div className="absolute bottom-4 inset-x-4 sm:inset-x-6 z-30 pointer-events-none flex flex-col items-center">
         <div className="pointer-events-auto w-full max-w-4xl">
           <EarthTimelineScrubber
-            currentYear={currentYear}
-            onSetYear={setCurrentYear}
-            selectedDomain={selectedDomain}
-            onSelectDomain={handleSelectDomain}
-            currentTrend={currentTrend}
+            currentYear={s.currentYear}
+            onSetYear={s.setCurrentYear}
+            selectedDomain={s.selectedDomain}
+            onSelectDomain={s.handleSelectDomain}
+            currentTrend={s.currentTrend}
           />
         </div>
       </div>
 
-      {/* 6. Interactive Detective Case Walkthrough */}
-      <DetectiveScenariosModal
-        isOpen={showScenarios}
-        onClose={() => setShowScenarios(false)}
-        onSelectScenario={handleSelectScenario}
-        onSelectTrend={setSelectedTrendId}
-        onChangeViewMode={setViewMode}
-        trends={EARTH_SYSTEM_TRENDS}
-      />
-
-      {/* 7. Modals (NASA Fleet & Statistical Manual + Supabase Detective Logbook) */}
-      <Suspense fallback={null}>
-        {showBriefing && (
-          <EarthScienceModal
-            isOpen={showBriefing}
-            onClose={() => setShowBriefing(false)}
+      <Suspense fallback={<ModalLoadingFallback />}>
+        {s.activeModal === 'scenarios' && (
+          <DetectiveScenariosModal
+            isOpen
+            onClose={closeModal}
+            onSelectScenario={s.handleSelectScenario}
+            onSelectTrend={s.setSelectedTrendId}
+            onChangeViewMode={s.setViewMode}
+            trends={EARTH_SYSTEM_TRENDS}
           />
         )}
-        {showLogbook && (
+        {s.activeModal === 'briefing' && <EarthScienceModal isOpen onClose={closeModal} />}
+        {s.activeModal === 'logbook' && (
           <DetectiveLogModal
-            isOpen={showLogbook}
-            onClose={() => setShowLogbook(false)}
-            selectedTrend={currentTrend}
-            currentYear={currentYear}
+            isOpen
+            onClose={closeModal}
+            selectedTrend={s.currentTrend}
+            currentYear={s.currentYear}
           />
         )}
-        {showPlanetology && (
+        {s.activeModal === 'planetology' && (
           <ComparativePlanetologyModal
-            isOpen={showPlanetology}
-            onClose={() => setShowPlanetology(false)}
-            onSelectPlanet={(planetId) => {
-              setSelectedPlanetId(planetId);
-              setViewMode(planetId === 'earth' ? 'earth_focus' : 'planet_focus');
-            }}
+            isOpen
+            onClose={closeModal}
+            onSelectPlanet={s.handlePlanetologySelect}
           />
         )}
-        {showReportModal && (
+        {s.activeModal === 'report' && (
           <ForensicReportModal
-            isOpen={showReportModal}
-            onClose={() => setShowReportModal(false)}
-            trend={currentTrend}
-            selectedHotspot={selectedHotspot}
-            currentYear={currentYear}
+            isOpen
+            onClose={closeModal}
+            trend={s.currentTrend}
+            selectedHotspot={s.selectedHotspot}
+            currentYear={s.currentYear}
           />
         )}
       </Suspense>
