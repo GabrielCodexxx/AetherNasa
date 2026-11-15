@@ -1,19 +1,13 @@
 import React, { useState } from 'react';
-import {
-  ChevronRight,
-  ChevronLeft,
-  Orbit,
-  Telescope,
-  Layers,
-  BookOpen,
-  Globe,
-  X,
-  Compass,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { PlanetData, SystemViewMode } from '../types/earthSystem';
 import { soundManager } from '../utils/soundEffects';
+import { PlanetHudHeader } from './hud/PlanetHudHeader';
+import { PlanetStructurePanel } from './hud/PlanetStructurePanel';
+import { PlanetDossierPanel } from './hud/PlanetDossierPanel';
+import { PlanetHudFooter } from './hud/PlanetHudFooter';
 
-interface PlanetHUDProps {
+export interface PlanetHUDProps {
   planet: PlanetData;
   viewMode: SystemViewMode;
   isOpen: boolean;
@@ -50,274 +44,34 @@ export const PlanetHUD: React.FC<PlanetHUDProps> = ({
       <div className="relative flex items-center">
         {/* Glassmorphic Eco-Tracker Card with Futuristic Sci-Fi Typography */}
         <div className="w-80 sm:w-96 bg-white/85 backdrop-blur-xl border border-white/90 rounded-3xl p-5 sm:p-6 shadow-2xl shadow-slate-200/70 text-slate-800 flex flex-col gap-4">
-          {/* Top Header Bar */}
-          <div className="flex items-center gap-2.5 pb-3 border-b border-slate-200/80">
-            {isStructureMode && (
-              <button
-                onClick={() => {
-                  soundManager.playClick();
-                  onChangeViewMode(planet.id === 'earth' ? 'earth_focus' : 'solar_system');
-                }}
-                className="w-8 h-8 rounded-xl bg-white border border-slate-200 text-[#0369A1] hover:bg-sky-50 transition-all flex items-center justify-center shrink-0 shadow-xs"
-                title="Return to Planetary View"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-            )}
+          <PlanetHudHeader
+            planetName={planet.name}
+            planetType={planet.type}
+            isStructureMode={isStructureMode}
+            onExitStructure={() =>
+              onChangeViewMode(planet.id === 'earth' ? 'earth_focus' : 'solar_system')
+            }
+            onPrevPlanet={onPrevPlanet}
+            onNextPlanet={onNextPlanet}
+            onClose={onClose}
+          />
 
-            <div className="flex-1">
-              <h2 className="text-2xl sm:text-3xl font-orbitron font-black tracking-widest text-slate-900 uppercase">
-                {planet.name}
-              </h2>
-              <p className="text-[11px] font-orbitron tracking-widest text-[#0369A1] uppercase font-bold">
-                {planet.type === 'star' ? 'STAR' : 'PLANET'}
-              </p>
-            </div>
-
-            {/* Quick Prev / Next Planet & Close Buttons */}
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => {
-                  soundManager.playClick();
-                  onPrevPlanet();
-                }}
-                className="p-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-600 hover:text-[#0369A1] hover:border-sky-300 transition-all shadow-xs"
-                title="Previous Planet"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => {
-                  soundManager.playClick();
-                  onNextPlanet();
-                }}
-                className="p-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-600 hover:text-[#0369A1] hover:border-sky-300 transition-all shadow-xs"
-                title="Next Planet"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => {
-                  soundManager.playClick();
-                  onClose();
-                }}
-                className="p-1.5 rounded-lg bg-slate-50 hover:bg-rose-50 border border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-300 transition-all shadow-xs ml-1"
-                title="Close Dossier"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Mode 1: STRUCTURE (Internal Cutaway View) */}
           {isStructureMode ? (
-            <div className="space-y-3.5 max-h-[58vh] overflow-y-auto pr-1">
-              <p className="font-space text-xs text-slate-500 leading-relaxed">
-                Internal layering determined through gravitational harmonics, spectroscopic missions, and planetary seismology.
-              </p>
-
-              <div className="space-y-3">
-                {planet.layers.map((layer, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3.5 rounded-2xl bg-white/90 border border-slate-200/90 space-y-1.5 shadow-xs transition-all hover:border-sky-300"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-orbitron font-black text-slate-900 text-xs tracking-wider flex items-center gap-2">
-                        <span
-                          className="w-2 h-2 rotate-45 shrink-0"
-                          style={{ backgroundColor: layer.color }}
-                        ></span>
-                        {layer.name}
-                      </span>
-                      <span className="font-orbitron text-[9px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
-                        {Math.round(layer.thicknessRadius * 100)}% RADIUS
-                      </span>
-                    </div>
-
-                    <p className="font-orbitron text-[10px] text-[#0369A1] font-bold uppercase tracking-wider">
-                      {layer.subtitle}
-                    </p>
-
-                    <p className="font-space text-xs text-slate-600 leading-relaxed">
-                      {layer.description}
-                    </p>
-
-                    <div className="pt-1 font-space text-[10px] text-slate-500">
-                      <span className="font-semibold text-slate-400">Composition:</span> {layer.composition}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <PlanetStructurePanel layers={planet.layers} />
           ) : (
-            /* Mode 2: Standard Planetary Dossier */
-            <div className="space-y-4">
-              <p className="font-space text-xs text-slate-600 leading-relaxed">
-                {planet.description}
-              </p>
-
-              {/* Three Modern Sci-Fi Action Buttons */}
-              <div className="space-y-2">
-                {/* Button 1: Planet Detective / Earth Detective */}
-                <button
-                  onClick={() => {
-                    soundManager.playClick();
-                    if (planet.id === 'earth') {
-                      onChangeViewMode(viewMode === 'earth_focus' ? 'solar_system' : 'earth_focus');
-                    } else {
-                      onChangeViewMode(viewMode === 'planet_focus' ? 'solar_system' : 'planet_focus');
-                    }
-                  }}
-                  className={`w-full py-3 px-4 rounded-2xl font-orbitron font-bold text-xs tracking-wider uppercase transition-all flex items-center justify-between border ${
-                    viewMode === 'earth_focus' || viewMode === 'planet_focus'
-                      ? 'bg-[#0369A1] text-white border-transparent shadow-md shadow-sky-900/20'
-                      : 'bg-slate-50 hover:bg-sky-50 text-slate-700 hover:text-[#0369A1] border-slate-200 hover:border-sky-300'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    {planet.id === 'earth' ? (
-                      <Globe className="w-4 h-4 text-sky-500" />
-                    ) : (
-                      <Compass className="w-4 h-4 text-sky-500" />
-                    )}
-                    <span>
-                      {planet.id === 'earth' ? 'EARTH DETECTIVE' : `${planet.name} DETECTIVE`}
-                    </span>
-                  </span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-
-                {/* Button 2: Encyclopedia */}
-                <button
-                  onClick={() => {
-                    soundManager.playClick();
-                    onOpenEncyclopedia();
-                  }}
-                  className="w-full py-3 px-4 rounded-2xl font-orbitron font-bold text-xs tracking-wider uppercase bg-slate-50 hover:bg-emerald-50 text-slate-700 hover:text-[#15803D] border border-slate-200 hover:border-emerald-300 transition-all flex items-center justify-between shadow-xs"
-                >
-                  <span className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4 text-[#15803D]" />
-                    <span>ENCYCLOPEDIA</span>
-                  </span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-
-                {/* Button 3: Structure Cutaway */}
-                <button
-                  onClick={() => {
-                    soundManager.playClick();
-                    onChangeViewMode('structure');
-                  }}
-                  className="w-full py-3 px-4 rounded-2xl font-orbitron font-bold text-xs tracking-wider uppercase bg-slate-50 hover:bg-amber-50 text-slate-700 hover:text-amber-800 border border-slate-200 hover:border-amber-300 transition-all flex items-center justify-between shadow-xs"
-                >
-                  <span className="flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-amber-600" />
-                    <span>STRUCTURE</span>
-                  </span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Quick Planetary Stats */}
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <div className="p-2.5 rounded-2xl bg-slate-50/90 border border-slate-200/80 shadow-xs">
-                  <span className="font-space text-slate-400 block text-[9px] uppercase font-bold tracking-wider">
-                    Mean Surface Temp
-                  </span>
-                  <span className="font-orbitron text-amber-700 font-extrabold text-xs">
-                    {planet.meanTempC}
-                  </span>
-                </div>
-                <div className="p-2.5 rounded-2xl bg-slate-50/90 border border-slate-200/80 shadow-xs">
-                  <span className="font-space text-slate-400 block text-[9px] uppercase font-bold tracking-wider">
-                    Surface Gravity
-                  </span>
-                  <span className="font-orbitron text-slate-900 font-extrabold text-xs">
-                    {planet.gravity}
-                  </span>
-                </div>
-                <div className="p-2.5 rounded-2xl bg-slate-50/90 border border-slate-200/80 shadow-xs">
-                  <span className="font-space text-slate-400 block text-[9px] uppercase font-bold tracking-wider">
-                    Day Length
-                  </span>
-                  <span className="font-orbitron text-[#0369A1] font-extrabold text-xs">
-                    {planet.dayLength}
-                  </span>
-                </div>
-                <div className="p-2.5 rounded-2xl bg-slate-50/90 border border-slate-200/80 shadow-xs">
-                  <span className="font-space text-slate-400 block text-[9px] uppercase font-bold tracking-wider">
-                    Known Moons
-                  </span>
-                  <span className="font-orbitron text-slate-900 font-extrabold text-xs">
-                    {planet.moonsCount}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <PlanetDossierPanel
+              planet={planet}
+              viewMode={viewMode}
+              onChangeViewMode={onChangeViewMode}
+              onOpenEncyclopedia={onOpenEncyclopedia}
+            />
           )}
 
-          {/* Bottom Action Buttons with Orbitron Typography */}
-          <div className="pt-2 border-t border-slate-200/80 grid grid-cols-3 gap-2 text-center">
-            {/* 1. Switch Planet */}
-            <button
-              onClick={() => {
-                soundManager.playClick();
-                onNextPlanet();
-              }}
-              className="flex flex-col items-center justify-center p-2 rounded-2xl bg-slate-50 border border-slate-200 hover:border-sky-300 hover:bg-sky-50/60 transition-all group shadow-xs"
-              title="Switch to Next Planet"
-            >
-              <div className="w-8 h-8 rotate-45 rounded-lg bg-sky-100/70 border border-sky-200 flex items-center justify-center text-[#0369A1] mb-2 group-hover:scale-105 transition-all">
-                <span className="-rotate-45 font-orbitron font-bold text-xs">&lt;&gt;</span>
-              </div>
-              <span className="font-orbitron text-[9px] font-bold text-slate-700 group-hover:text-[#0369A1] tracking-wider">
-                SWITCH
-              </span>
-            </button>
-
-            {/* 2. Night Sky */}
-            <button
-              onClick={() => {
-                soundManager.playClick();
-                onChangeViewMode(viewMode === 'night_sky' ? 'solar_system' : 'night_sky');
-              }}
-              className={`flex flex-col items-center justify-center p-2 rounded-2xl border transition-all group shadow-xs ${
-                viewMode === 'night_sky'
-                  ? 'bg-sky-100 border-[#0369A1] text-[#0369A1]'
-                  : 'bg-slate-50 border-slate-200 hover:border-sky-300 hover:bg-sky-50/60 text-slate-700'
-              }`}
-              title="View Deep Space Night Sky"
-            >
-              <div className="w-8 h-8 rotate-45 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-700 mb-2 group-hover:scale-105 transition-all">
-                <Telescope className="-rotate-45 w-4 h-4" />
-              </div>
-              <span className="font-orbitron text-[9px] font-bold group-hover:text-[#0369A1] tracking-wider">
-                NIGHT SKY
-              </span>
-            </button>
-
-            {/* 3. Solar System Overview */}
-            <button
-              onClick={() => {
-                soundManager.playClick();
-                onChangeViewMode('solar_system');
-              }}
-              className={`flex flex-col items-center justify-center p-2 rounded-2xl border transition-all group shadow-xs ${
-                viewMode === 'solar_system'
-                  ? 'bg-emerald-50 border-[#15803D] text-[#15803D]'
-                  : 'bg-slate-50 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/60 text-slate-700'
-              }`}
-              title="Return to Solar System View"
-            >
-              <div className="w-8 h-8 rotate-45 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-[#15803D] mb-2 group-hover:scale-105 transition-all">
-                <Orbit className="-rotate-45 w-4 h-4" />
-              </div>
-              <span className="font-orbitron text-[9px] font-bold group-hover:text-[#15803D] tracking-wider">
-                SYSTEM
-              </span>
-            </button>
-          </div>
+          <PlanetHudFooter
+            viewMode={viewMode}
+            onNextPlanet={onNextPlanet}
+            onChangeViewMode={onChangeViewMode}
+          />
         </div>
 
         {/* Collapsible Edge Tab Handle */}
