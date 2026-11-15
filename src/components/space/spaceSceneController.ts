@@ -129,12 +129,17 @@ export function mountSpaceScene({
   });
 
   let animId = 0;
-  const clock = new THREE.Clock();
+  let lastFrameMs: number | null = null;
 
   const animate = () => {
     animId = requestAnimationFrame(animate);
+    const nowMs = performance.now();
+    // Match THREE.Clock.getDelta() seconds semantics while clamping background-tab spikes.
+    const delta =
+      lastFrameMs === null ? 0 : Math.min(Math.max((nowMs - lastFrameMs) / 1000, 0), 0.1);
+    lastFrameMs = nowMs;
     stepSpaceFrame({
-      delta: clock.getDelta(),
+      delta,
       container,
       camera,
       orbitState: orbitStateRef.current,
