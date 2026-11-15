@@ -113,3 +113,31 @@ export interface NasaSatelliteMission {
   primaryMission: string;
   status: 'OPERATIONAL' | 'EXTENDED' | 'HISTORIC';
 }
+
+export interface LinearRegressionResult {
+  slopePerYear: number;
+  slopePerDecade: number;
+  intercept: number;
+  rSquared: number;
+}
+
+export interface MannKendallResult {
+  score: number;
+  tau: number;
+  variance: number;
+  zScore: number;
+  pValue: number;
+  isSignificant: boolean;
+  direction: 'increasing' | 'decreasing' | 'neutral';
+}
+
+export interface SensSlopeResult {
+  slopePerYear: number;
+  slopePerDecade: number;
+  intercept: number;
+}
+
+export interface PearsonCorrelationResult {
+  r: number;
+  rSquared: number;
+}
